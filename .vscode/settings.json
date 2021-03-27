@@ -1,0 +1,4 @@
+{
+  "python.pythonPath": "/workspaces/programming-lesson/.env/bin/python",
+  "jupyter.themeMatplotlibPlots": true
+}
