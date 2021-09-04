@@ -1,3 +1,7 @@
+#  main.ipynb는 Visual Studio Code에서 열어주세요!
+# 거기서 한 게 더 많을거에요!
+
+
 print(1, 2, 3, 4, 5)
 print("안녕하세요", "제", "이름은", "이현우입니다")
 
@@ -24,6 +28,12 @@ print('{:5d}'.format(52))
 
 print('{:010d}'.format(-52))
 
-print('%d! 우와' % 123)
+print('%d7! 우와' % 123)
+print('%.3f' % 123.45)
 
+
+print(len('123435525'))
+print(len([1, 2, 3]))
+
+print(type('hi'))
 
