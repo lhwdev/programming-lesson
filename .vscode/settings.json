@@ -1,4 +1,5 @@
 {
   "jupyter.themeMatplotlibPlots": true,
-  "python.defaultInterpreterPath": "./env/Scripts/python"
+  "python.defaultInterpreterPath": "./env/Scripts/python",
+  "jupyter.jupyterServerType": "local"
 }
