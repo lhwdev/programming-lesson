@@ -1,5 +1,6 @@
 {
   "jupyter.themeMatplotlibPlots": true,
   "python.defaultInterpreterPath": "./env/Scripts/python",
-  "jupyter.jupyterServerType": "local"
+  "jupyter.jupyterServerType": "local",
+  "editor.fontFamily": "'Fira Code'"
 }
