@@ -7,5 +7,5 @@
   "python.formatting.yapfArgs": [
     "--style",
     "{indent_width: 2}"
-  ],
+  ]
 }
