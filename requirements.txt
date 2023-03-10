@@ -1,5 +1,0 @@
-ipykernel==6.4.1
-ipython==7.28.0
-jupyter-core==4.8.1
-yapf==0.31.0
-nbconvert==6.2.0
