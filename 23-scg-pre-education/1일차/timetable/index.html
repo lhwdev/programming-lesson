@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="UTF-8">
+    <title>시간 테이블!</title>
+    <link rel="stylesheet" href="./style.css" type="text/css">
+  </head>
+
+  <body>
+    <h1>시간 테이블!</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th />
+          <th>3/11</th>
+          <th>3/12</th>
+          <th>3/13</th>
+          <th>3/14</th>
+          <th>3/15</th>
+          <th>3/16</th>
+          <th>3/17</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>책상 정리</td>
+          <td colspan="2" class="errand er1"><a href="./errand.html?id=1">이강훈</a></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>버그 수정</th>
+          <td></td>
+          <td colspan="5" class="errand er2"><a href="./errand.html?id=2">권민성</a></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>회의 준비</th>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td colspan="2" class="errand er3"><a href="./errand.html?id=3">박민지</a></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>실습 준비</th>
+          <td></td>
+          <td colspan="3" class="errand er4"><a href="./errand.html?id=4">한태혁</a></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>스터디 준비</th>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td colspan="2" class="errand er5"><a href="./errand.html?id=5">고현수</a></td>
+        </tr>
+        <tr>
+          <td>리엑트 개발 강의 구매 요청</th>
+          <td></td>
+          <td colspan="2" class="errand er6"><a href="./errand.html?id=6">김상현</a></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <form action="/api/errands/v2/errand" method="post" id="form">
+      <div class="form_input">
+        <div class="form_input_name">과목명</div>
+        <input type="text" name="과목" id="subject" required>
+      </div>
+      <div class="form_input">
+        <div class="form_input_name">담당자명</div>
+        <input type="text" name="담당자" id="assignee" required>
+      </div>
+      <div class="form_input">
+        <div class="form_input_name">종류</div>
+        <div class="form_input_value">
+          <div class="form_radio">
+            <input type="radio" name="종류" id="type" value="admin">
+            <label for="admin">행정</label>
+          </div>
+          <div class="form_radio">
+            <input type="radio" name="종류" id="type" value="dev">
+            <label for="dev">개발</label>
+          </div>
+          <div class="form_radio">
+            <input type="radio" name="종류" id="type" value="guitar">
+            <label for="guitar">기타</label>
+          </div>
+        </div>
+      </div>
+      <div class="form_input">
+        <div class="form_input_name">기간</div>
+        <div class="form_input_value select">
+          <select name="기간 시작 월" form="form" id="time_start_month">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+          월&nbsp;
+
+          <input type="number" name="기간 시작 일" id="time_start_day" class="form_day">
+          일 ~&nbsp;
+          <select name="기간 시작 월" form="form" id="time_end_month">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+          월&nbsp;
+          
+          <input type="number" name="기간 시작 일" id="time_end_day" class="form_day">
+          일
+        </div>
+      </div>
+      <button type="submit" form="form">등록하기</button>
+    </form>
+  </body>
+
+</html>

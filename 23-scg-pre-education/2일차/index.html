@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCG</title>
+    <link rel="stylesheet" href="./style.css" type="text/css">
+  </head>
+
+  <body>
+    <script src="index.js"></script>
+    <div id="container">
+      <div id="game_container-outer">
+        <div id="game_container"></div>
+      </div>
+      <dialog id="home_dialog">
+        <div> <!-- 으악 div 지옥(바깥: dialog scrim, 안: dialog content 부분) -->
+          <div>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+              <!-- tailwind의 필요성... -->
+              <div style="font-size: 5em;">카드 짝 맞추기</div>
+              <div style="font-size: 1em; color: #5389ff;">SCG 과제 - <a href="https://github.com/lhwdev"
+                  style="color: inherit;">2023311474 이현우</a></div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+              <section class="intro_section">
+                <span class="intro_section_label">제한시간</span>
+                <button class="time_limit" data-duration="20">20초</button>
+                <button class="time_limit" data-duration="30">30초</button>
+                <button class="time_limit selected" data-duration="60">1분</button>
+                <button class="time_limit" data-duration="-1">무제한</button>
+              </section>
+              <section class="intro_section">
+                <span class="intro_section_label">컨트롤 난이도</span>
+                <button class="speed" data-speed="2">순한맛</button>
+                <button class="speed selected" data-speed="1">보통</button>
+                <button class="speed" data-speed="0.5">매운맛</button>
+                <button class="speed" data-speed="0.3">불닭마라</button>
+              </section>
+              <section class="intro_section">
+                <span class="intro_section_label">크기</span>
+                <button class="size" data-size="3">3x3</button>
+                <button class="size selected" data-size="4">4x4</button>
+                <button class="size" data-size="5">5x5</button>
+              </section>
+            </div>
+            <button class="button_start button-link">시작!</button>
+          </div>
+        </div>
+      </dialog>
+      <dialog id="success_dialog">
+        <div>
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="font-size: 5em;">
+              성공
+            </div>
+            <div id="record" style="font-size: 1.5em;">(기록)</div>
+            <button class="button_home button-link">홈으로</button>
+          </div>
+        </div>
+      </dialog>
+      <dialog id="fail_dialog">
+        <div>
+          <div>
+            <div style="font-size: 5em; padding: 10px;">
+              시간 초과
+            </div>
+            <div style="display: flex; gap: 20px;">
+              <button class="button_continue button-link">시간제한 없이 하기</button>
+              <button class="button_home button-link">홈으로</button>
+            </div>
+          </div>
+        </div>
+      </dialog>
+    </div>
+  </body>
+
+</html>

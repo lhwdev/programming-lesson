@@ -1,0 +1,207 @@
+@charset "UTF-8";
+
+/* For card flip, see https://www.w3schools.com/howto/howto_css_flip_card.asp */
+
+body {
+  margin: 0;
+  user-select: none;
+  /* this is game, not a element */
+}
+
+#container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#game_container-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-progress {
+  width: 100%;
+}
+
+.card-table {
+  perspective: 1000px;
+  border-collapse: separate;
+  border-spacing: 10px;
+}
+
+.card {
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  font-size: 3em;
+  /* cursor: alias looks just like flipping card; is it only me? */
+  cursor: alias;
+}
+
+.card-flip {
+  /* TODO: 왜 카드를 넘기면 위치가 조금 이상해지지? */
+  width: 100%;
+  height: 100%;
+  position: relative;
+  text-align: center;
+  transition: transform var(--card-flip-duration);
+  transform-style: preserve-3d;
+
+  border: 2px solid #0000;
+  border-radius: 12px;
+}
+
+.card-front,
+.card-hidden {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+
+  border: 1px solid black;
+  border-radius: 12px;
+}
+
+.card-flip:not(.card-state-flipped) {
+  transform: rotateY(180deg);
+}
+
+.card-flip.card-state-flipped-temporary {
+  border: 1px solid black;
+  animation: .2s infinite alternate blink;
+  animation-timing-function: linear;
+}
+
+@keyframes blink {
+  from {
+    border-color: #0000;
+  }
+
+  to {
+    border-color: #000f;
+  }
+}
+
+.card-hidden {
+  transform: rotateY(180deg);
+}
+
+/* etc */
+button {
+  /* Animation of gradient: see https://stackoverflow.com/a/63848864/10744716 */
+  margin: 5px;
+  padding: 10px 25px;
+  border-width: 0;
+  border-radius: 10px;
+
+  font-size: .9em;
+
+  background-color: #e0eaff;
+  transition: background-color 300ms;
+
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  /* https://stackoverflow.com/a/26449654/10744716 etc. */
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+
+  background: radial-gradient(#4b75cf66, #4b75cf00);
+  opacity: 0;
+  scale: 1;
+  transition: opacity 300ms, scale 400ms;
+}
+
+button:active::after {
+  opacity: 1;
+  scale: 1.4;
+}
+
+
+.button-link {
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #d4ddf1;
+}
+
+button.selected {
+  background-color: #c5d7ff;
+}
+
+button.selected:hover {
+  background-color: #bacaee;
+}
+
+dialog {
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms;
+  background-color: transparent;
+
+  width: 100%;
+  height: 100%;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+dialog[open] {
+  pointer-events: inherit;
+  opacity: 1;
+}
+
+dialog>div {
+  transition: opacity 500ms;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f088;
+  backdrop-filter: blur(10px);
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+
+dialog>div>div {
+  width: 100%;
+  height: 100%;
+  max-width: 800px;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.intro_section {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  /* 저 gap이라는 거 처음봐요;;; */
+  gap: 10px;
+  background-color: #ebf2ff;
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.intro_section_label {
+  font-size: .9em;
+  margin: 0 5px;
+}
