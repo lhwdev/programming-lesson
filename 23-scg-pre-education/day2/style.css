@@ -118,7 +118,7 @@ button::after {
   height: 100%;
   z-index: 10;
 
-  background: radial-gradient(#4b75cf66, #4b75cf00);
+  background: radial-gradient(circle, #4b75cf66, #4b75cf00);
   opacity: 0;
   scale: 1;
   transition: opacity 300ms, scale 400ms;

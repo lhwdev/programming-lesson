@@ -1,0 +1,19 @@
+@import url(style.css);
+
+.content {
+  background-color: rgb(var(--surface));
+  color: rgb(var(--on-surface));
+  padding: 16px;
+  border: 1px solid rgb(var(--outline));
+  border-radius: 16px;
+  flex: 100;
+  text-align: start;
+}
+
+#actions {
+  display: flex;
+  gap: 5px;
+  padding-bottom: 20px;
+
+  justify-content: end;
+}

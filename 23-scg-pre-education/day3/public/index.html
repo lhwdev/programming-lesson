@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내가 다룰 수 있는 기술 스택 자랑하기</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+  </head>
+
+  <body>
+    <script src="index.js"></script>
+
+    <header class="top-app-bar">
+      <div class="icons">
+        <span style="flex: 1;"></span>
+        <button id="action-search" class="text-button-small">검색</button>
+        <button id="action-goto_id" class="text-button-small">번호로 이동</button>
+        <button id="action-new" class="text-button-small">작성하기</button>
+      </div>
+      <h1>내가 다룰 수 있는 기술 스택</h1>
+    </header>
+
+    <div id="searcher" hidden>
+      <form id="form-search">
+        <div style="display: flex;">
+          <button id="action-cancel_search" class="text-button-small">검색 취소</button>
+          <input type="text" placeholder="검색어를 입력하세요" style="width: 400px; font-size: 1.1rem; border-width: 0; outline: 0; border-bottom: 1px solid rgb(var(--outline));">
+        </div>
+      </form>
+    </div>
+
+    <main class="main_grid">
+    </main>
+
+    <dialog id="dialog-goto_id">
+      <div>
+        <h1>ID로 게시글 보기</h1>
+        <form action="/article">
+          <input type="text" name="id" placeholder="ID 입력">
+          <button type="submit">이동하기</button>
+        </form>
+      </div>
+    </dialog>
+  </body>
+
+</html>
