@@ -42,10 +42,10 @@ module.exports = {
 
   validateStack: { // I desparately need zod etc
     title(value) {
-      return typeof value == "string" && value.length <= 50
+      return typeof value == "string" && value.length <= 50 && value.length > 0
     },
     content(value) {
-      return typeof value == "string" && value.length <= 1000
+      return typeof value == "string" && value.length <= 1000 && value.length > 0
     }
   }
 }
