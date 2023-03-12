@@ -1,0 +1,141 @@
+extends utils/layout
+
+//- pug는 2년동안 publish가 없는걸 보면 어쩌다가 운영 중단된거 같은데... 이게 맞나요...
+
+mixin reviews_column(offset, cardGap, extra)
+  .col(class=[`col${offset + 1}`], style={ flex: 1, display: 'flex', 'flex-direction': 'column', gap: cardGap })
+    if extra
+      style.
+        #action-new-article-color {
+          background-color: #559cff;
+          overflow: hidden;
+          padding: 0;
+          z-index: 0;
+        }
+
+        #action-new-article {
+          padding: 32px 18px 72px 18px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+
+          color: #f5f5f5;
+          cursor: pointer;
+        }
+
+        #action-new-article::before {
+          pointer-events: none;
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 1;
+          
+          background: linear-gradient(125deg, #00ddff, #b155ff);
+          opacity: 0;
+          transition: opacity 400ms;
+        }
+
+        #action-new-article>* {
+          z-index: 2;
+        }
+
+        #action-new-article:hover::before {
+          opacity: 1;
+        }
+
+        #action-new-article::after { background-color: #fff; }
+      
+      div.card(id='action-new-article-color')
+        article(
+          id='action-new-article',
+          class=['button', 'filled-button'],
+          role='button',
+          tabindex='0',
+        )
+          h2(style={ 'font-size': '1.5rem' }) 나도 후기 작성하기
+
+      script.
+        document.querySelector("#action-new-article").onclick = () => window.open('/write', '_self')
+
+    - for(let index = offset; index < db.reviews.length; index += 5) {
+    +review_card(db.reviews[index])
+    - }
+
+block content
+
+  style.
+    .card::after { opacity: 0 !important; }
+    .card:active:not(:has(:is([role=button], button):active))::after { opacity: 0.06 !important; }
+
+  mixin review_card(review)
+    article.card.filled-button.color.color-white(
+      data-id=review.id,
+      style={ 'display': 'flex', 'flex-direction': 'column', 'gap': '10px', 'font-size': '1rem', 'font-weight': 'normal' },
+      onclick='review_card_onclick(this)'
+    )
+      h2.title(style={ 'font-size': '1rem' })= review.author
+      .content(style=`
+        margin-bottom: 10px;
+        display: -webkit-box;
+        text-overflow: ellipsis;
+        line-clamp: 8;
+        -webkit-line-clamp: 8;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      `)= review.content
+      .likes(style={ 'font-size': '.9rem' }) 좋아요 #{review.likes}개
+
+      +row-stretch({ style: { 'width': '100%' } })
+        button.like.button.filled-button.color.color-p_surface-black-primary(class=['button'], onclick='review_card_like_onclick(this, event)') 좋아요
+
+  script.
+    function review_card_onclick(card) {
+      const dialog = document.querySelector('#view-detail')
+      dialog.querySelector('.title').innerText = card.querySelector('.title').innerText
+      dialog.querySelector('.content').innerText = card.querySelector('.content').innerText
+      dialog.querySelector('.likes').innerText = card.querySelector('.likes').innerText
+      dialog.showModal()
+    }
+
+    async function review_card_like_onclick(button, event) {
+      event.stopPropagation()
+      const card = button.closest('.card')
+      const result = await fetch(`/api/like?id=${card.dataset.id}`, { method: 'POST' })
+      if(result.ok) {
+        window.open('/message/like-success', '_self')
+      } else {
+        alert((await result.json()).message)
+      }
+    }
+
+  include utils/components 
+
+  style.
+    body { padding: 32px; }
+
+  h1 성균관대학교 학우들의 이야기
+
+  - const cardGap = '15px'
+  main(style={ 'display': 'flex', 'gap': cardGap })
+    +reviews_column(4, cardGap, true)
+    +reviews_column(0, cardGap)
+    +reviews_column(1, cardGap)
+    +reviews_column(2, cardGap)
+    +reviews_column(3, cardGap)
+  
+  dialog#view-detail
+    +column({ gap: '15px' })
+      h1.title
+      main(style='overflow: auto; max-height: 350px;')
+        +column({ gap: '10px' })
+          .content
+          .likes
+      button#close.button.filled-button.color.color-white 닫기
+
+      script.
+        document.querySelector('#close').onclick = () => document.querySelector('#view-detail').close()
+
+

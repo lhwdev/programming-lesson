@@ -1,0 +1,43 @@
+extends utils/layout
+
+block content
+  include utils/components
+
+  div(class=['wtf-this-is-cool'], style={
+    'display': 'grid',
+    'align-items': 'center',
+    'justify-content': 'center',
+
+    'height': '100%',
+  })
+    style.
+      #my_form {
+        width: 460px;
+        padding: 64px 48px;
+        backdrop-filter: blur(30px);
+        background-color: #fff7;
+        border-radius: 32px;
+        
+        display: flex;
+        flex-direction: column;
+        gap: 52px;
+
+        align-items: stretch;
+        text-align: center;
+      }
+
+    form(id='my_form', method='POST', action='/api/review')
+      h1 #{title}
+
+      +column({ gap: '18px' })
+        +text_input('작성자', name='author')
+          input(type='text', name='author', placeholder='작성자', required)
+        +text_input('내용', name='content')
+          textarea(type='text', name='content', placeholder='내용', required, style='min-height: 72px;')
+      
+      +row({ gap: '8px' })
+        button.button.filled-button.color.color-primary(type='submit', style='flex: 3;') 작성하기
+        button#action-cancel.button.filled-button.color.color-white(type='button', style='flex: 1;') 취소
+      
+      script.
+        document.querySelector('#action-cancel').onclick = () => window.history.back()

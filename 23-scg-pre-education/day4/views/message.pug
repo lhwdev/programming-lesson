@@ -1,0 +1,39 @@
+extends utils/layout
+
+block content
+  include utils/components
+
+  div(class=['wtf-this-is-cool'], style={
+    'display': 'grid',
+    'align-items': 'center',
+    'justify-content': 'center',
+
+    'height': '100%',
+  })
+    style.
+      #container {
+        width: 460px;
+        padding: 64px 48px;
+        backdrop-filter: blur(30px);
+        background-color: #fff7;
+        border-radius: 32px;
+        
+        display: flex;
+        flex-direction: column;
+        gap: 52px;
+
+        align-items: center;
+        text-align: center;
+      }
+
+    #container
+      h1 #{title}
+
+      +column({ gap: '24px', alignItems: 'center' })
+        main(style='font-size: 1rem;') #{message.content}
+        button#action-back.button.filled-button.color.color-primary 돌아가기
+
+        script.
+          document.querySelector('#action-back').onclick = () => window.open('/', '_self')
+
+
