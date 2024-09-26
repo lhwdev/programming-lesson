@@ -1,0 +1,83 @@
+.alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  gap: 6px;
+  border-radius: 4px;
+  min-height: 48px;
+  padding: 8px 12px 8px 10px;
+}
+
+.alert[data-alert-type="warning"] {
+  background-color: #fff6e6;
+}
+
+.alert[data-alert-type="error"] {
+  background-color: #ffe6e6;
+}
+
+.alert[data-alert-type="info"] {
+  background-color: #e6ebff;
+}
+
+.alert[data-alert-type="success"] {
+  background-color: #e6ffe6;
+}
+
+[data-color-scheme="dark"] .alert[data-alert-type="warning"] {
+  background-color: #805d20;
+}
+
+[data-color-scheme="dark"] .alert[data-alert-type="error"] {
+  background-color: #802020;
+}
+
+[data-color-scheme="dark"] .alert[data-alert-type="info"] {
+  background-color: #203380;
+}
+
+[data-color-scheme="dark"] .alert[data-alert-type="success"] {
+  background-color: #208020;
+}
+
+.alert-icon-wrapper {
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: content-box;
+  padding: 4px;
+  height: 18px;
+  width: 18px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.alert-icon-wrapper:hover {
+  background-color: #00000010;
+}
+
+.alert-icon-wrapper:active {
+  background-color: #00000019;
+}
+
+.alert-icon[data-alert-icon-type="warning"] {
+  color: #e69819
+}
+
+.alert-icon[data-alert-icon-type="error"] {
+  color: #d80d0d
+}
+
+.alert-icon[data-alert-icon-type="info"] {
+  color: #507aff
+}
+
+.alert-icon[data-alert-icon-type="success"] {
+  color: #0bc10b
+}
+
+.inline-content {
+  flex-grow: 1;
+}
