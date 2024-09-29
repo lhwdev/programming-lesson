@@ -1,6 +1,6 @@
 import { defaultProps } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
-import { Menu } from "@mantine/core";
+import { ActionIcon, Menu } from "@mantine/core";
 import { MdCancel, MdCheckCircle, MdError, MdInfo } from "react-icons/md";
 import "./Alert.css";
 import { ReactNode } from "react";
@@ -72,7 +72,9 @@ export const Alert = createReactBlockSpec(
           type={alertType}
           iconWrapper={(icon) => (
             <Menu withinPortal={false} zIndex={999999}>
-              <Menu.Target>{icon}</Menu.Target>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray">{icon}</ActionIcon>
+              </Menu.Target>
 
               {/* Dropdown to change the Alert type */}
               <Menu.Dropdown>

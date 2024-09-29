@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"cSpell.words": [
+			"Clsx"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint"
+		]
+	}
+}

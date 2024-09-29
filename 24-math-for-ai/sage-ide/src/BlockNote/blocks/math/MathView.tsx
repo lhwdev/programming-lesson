@@ -1,24 +1,35 @@
-import * as katex from "katex";
+import katex, { KatexOptions } from "katex";
 import { CSSProperties, useMemo } from "react";
+import "./MathView.css";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const katex_ = katex as any;
 
 type Cls<T> = { new (...args: unknown[]): T };
-const { Span, Anchor, Img, SymbolNode, SvgNode, PathNode, LineNode }: {
+const { Span, Anchor, SymbolNode, SvgNode, PathNode, LineNode }: {
   Span: Cls<Span>;
   Anchor: Cls<Anchor>;
-  Img: Cls<Img>;
   SymbolNode: Cls<SymbolNode>;
   SvgNode: Cls<SvgNode>;
   PathNode: Cls<PathNode>;
   LineNode: Cls<LineNode>;
 } = katex_.__domTree;
 
-export function MathView({ tex, options }: { tex: string; options: katex.KatexOptions }) {
+export function useMathView(tex: string, options: KatexOptions) {
   return useMemo(() => {
-    const tree = katex_.__renderToDomTree(tex, options);
-    return <KatexNode node={tree} />;
+    try {
+      // TODO: 'output: "html"': support mathml for accessibility and paste-ability?
+      const tree = katex_.__renderToDomTree(tex, { ...options, output: "html" } satisfies KatexOptions);
+      return { node: <KatexNode node={tree} /> };
+    }
+    catch (e) {
+      if(e instanceof katex.ParseError) {
+        return { error: e };
+      }
+      else{
+        throw e;
+      }
+    }
   }, [tex, options]);
 }
 
@@ -27,7 +38,7 @@ function makeEm(n: number) {
 }
 
 function classes(classes: string[]) {
-  return classes.filter((c) => c).join(" ")
+  return classes.filter((c) => c).join(" ");
 }
 
 function toNode(tag: string, node: HtmlDomNode) {
@@ -50,31 +61,48 @@ function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof Anchor) {
     return toNode("a", node);
   }
-  if(node instanceof Img) {
-    return (
-      <img
-        src={node.src}
-        alt={node.alt}
-        className="mord"
-        style={node.style}
-      />
-    );
-  }
+  // if(node instanceof Img) {
+  //   return (
+  //     <img
+  //       src={node.src}
+  //       alt={node.alt}
+  //       className="mord"
+  //       style={node.style}
+  //     />
+  //   );
+  // }
   if(node instanceof SymbolNode) {
     return (
       <span
-        style={{ marginRight: node.italic > 0 ? makeEm(node.italic) : 0, ...node.style }}
         className={classes(node.classes)}
+        style={{ marginRight: node.italic > 0 ? makeEm(node.italic) : 0, ...node.style }}
       >
-
+        {node.text}
       </span>
     );
   }
+  if(node instanceof SvgNode) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" {...node.attributes}>
+        {node.children.map((child) => <KatexNode node={child} />)}
+      </svg>
+    );
+  }
+  if(node instanceof PathNode) {
+    const dom = node.toNode() as SVGPathElement;
+    return <path d={dom.getAttribute("d")!} />;
+  }
+  if(node instanceof LineNode) {
+    return <line {...node.attributes} />;
+  }
+  console.error("unknown node", node);
+  throw new Error(`unknown node ${node.constructor?.name ?? node}`);
 }
 
 /// Type declarations
 
 interface VirtualNode {
+  toNode(): Node;
   toMarkup(): string;
 }
 

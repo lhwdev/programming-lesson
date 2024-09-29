@@ -54,13 +54,13 @@
   cursor: pointer;
 }
 
-.alert-icon-wrapper:hover {
+/* .alert-icon-wrapper:hover {
   background-color: #00000010;
-}
+} 
 
-.alert-icon-wrapper:active {
+* .alert-icon-wrapper:active {
   background-color: #00000019;
-}
+} */
 
 .alert-icon[data-alert-icon-type="warning"] {
   color: #e69819

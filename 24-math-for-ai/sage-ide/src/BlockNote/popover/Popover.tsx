@@ -1,0 +1,60 @@
+import {
+  Popover as MantinePopover,
+  PopoverDropdown as MantinePopoverDropdown,
+  PopoverTarget as MantinePopoverTarget,
+} from "@mantine/core";
+
+import { assertEmpty } from "@blocknote/core";
+import { ComponentProps } from "@blocknote/react";
+import { forwardRef } from "react";
+import { bnClsx } from "../bnClsx";
+
+export const Popover = (
+  props: ComponentProps["Generic"]["Popover"]["Root"],
+) => {
+  const { children, opened, position, ...rest } = props;
+
+  assertEmpty(rest);
+
+  return (
+    <MantinePopover
+      classNames={{ dropdown: bnClsx() }}
+      withinPortal={false}
+      zIndex={10000}
+      opened={opened}
+      position={position}
+    >
+      {children}
+    </MantinePopover>
+  );
+};
+
+export const PopoverTrigger = (
+  props: ComponentProps["Generic"]["Popover"]["Trigger"],
+) => {
+  const { children, ...rest } = props;
+
+  assertEmpty(rest);
+
+  return <MantinePopoverTarget>{children}</MantinePopoverTarget>;
+};
+
+export const PopoverContent = forwardRef<
+  HTMLDivElement,
+  ComponentProps["Generic"]["Popover"]["Content"]
+>((props, ref) => {
+  const {
+    className,
+    children,
+    variant, // unused
+    ...rest
+  } = props;
+
+  assertEmpty(rest);
+
+  return (
+    <MantinePopoverDropdown className={bnClsx(className)} ref={ref}>
+      {children}
+    </MantinePopoverDropdown>
+  );
+});

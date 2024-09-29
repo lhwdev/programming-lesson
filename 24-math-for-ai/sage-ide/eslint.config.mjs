@@ -13,7 +13,7 @@ export default [
     quotes: "double",
     semi: true,
     arrowParens: true,
-
+    braceStyle: "1tbs",
   }),
   react.configs.flat["jsx-runtime"],
   {
@@ -27,7 +27,6 @@ export default [
         after: true,
         overrides: {
           if: { after: false },
-          else: { after: false },
           switch: { after: false },
         },
       }],
@@ -40,6 +39,8 @@ export default [
         varsIgnorePattern: "^_",
         ignoreRestSiblings: true,
       }],
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-empty": "warn",
     },
   },
 ];
