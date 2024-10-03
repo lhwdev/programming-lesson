@@ -1,0 +1,9 @@
+code.pm-code-block {
+  font-family: unset;
+  tab-size: 2;
+}
+
+pre:has(> .pm-code-block) {
+  font-family: unset;
+  margin: 0;
+}

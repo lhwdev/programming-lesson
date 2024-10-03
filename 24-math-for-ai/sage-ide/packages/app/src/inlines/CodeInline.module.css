@@ -1,0 +1,11 @@
+@import url("@/common/style/iawriter-mono.css");
+
+.code-inline {
+  border-radius: 6px;
+  padding-inline: 4px;
+  background-color: var(--mantine-color-dark-light);
+  color: var(--mantine-color-dark-text);
+
+  font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
+  font-size: calc(1em - 2px);
+}

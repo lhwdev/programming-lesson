@@ -1,0 +1,27 @@
+@import url("https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.css");
+
+span.bn-math-view {
+  user-select: all;
+}
+
+[aria-expanded="true"] > span.bn-math-view {
+  background-color: var(--selection-color);
+}
+
+.bn-math-view-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  padding-inline: 6px 4px;
+}
+
+.bn-math-view-placeholder[data-type="default"] {
+  color: var(--mantine-color-gray-text);
+  background-color: var(--mantine-color-gray-light);
+}
+
+.bn-math-view-placeholder[data-type="error"] {
+  color: var(--mantine-color-red-text);
+  background-color: var(--mantine-color-red-light);
+}

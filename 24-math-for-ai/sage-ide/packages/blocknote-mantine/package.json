@@ -1,0 +1,54 @@
+{
+  "name": "@blocknote/mantine",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./style.css": "./src/style.css"
+  },
+  "dependencies": {
+    "@blocknote/core": "^0.15.10",
+    "@blocknote/react": "^0.15.10",
+    "@emotion/react": "^11.13.3",
+    "@mantine/core": "^7.13.0",
+    "@mantine/hooks": "^7.13.0",
+    "@tiptap/core": "^2.7.4",
+    "@tiptap/extension-document": "^2.7.4",
+    "@tiptap/extension-history": "^2.7.4",
+    "@tiptap/extension-text": "^2.7.4",
+    "@tiptap/pm": "^2.7.4",
+    "@tiptap/react": "^2.7.4",
+    "@types/jest": "^29.5.13",
+    "@types/katex": "^0.16.7",
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "clsx": "^2.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0"
+  },
+  "devDependencies": {
+    "globals": "^15.9.0",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.7.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

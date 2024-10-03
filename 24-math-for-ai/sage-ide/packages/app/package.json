@@ -1,0 +1,56 @@
+{
+  "name": "@sage-ide/app",
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@blocknote/core": "^0.15.10",
+    "@blocknote/mantine": "workspace:*",
+    "@blocknote/react": "^0.15.10",
+    "@emotion/react": "^11.13.3",
+    "@mantine/core": "^7.13.0",
+    "@mantine/hooks": "^7.13.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@tiptap/core": "^2.7.4",
+    "@tiptap/extension-document": "^2.7.4",
+    "@tiptap/extension-history": "^2.7.4",
+    "@tiptap/extension-text": "^2.7.4",
+    "@tiptap/pm": "^2.7.4",
+    "@tiptap/react": "^2.7.4",
+    "@types/jest": "^29.5.13",
+    "@types/katex": "^0.16.7",
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "clsx": "^2.1.1",
+    "katex": "^0.16.11",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "shiki": "^1.20.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.7.0",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "pnpm --workspace-root eslint .",
+    "preview": "vite preview"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

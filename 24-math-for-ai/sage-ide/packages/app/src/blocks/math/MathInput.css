@@ -1,0 +1,11 @@
+@import url("@/common/style/iawriter-mono.css");
+
+.bn-ex-math-input {
+  min-width: 260px;
+  min-height: 1em;
+  font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
+}
+
+.bn-ex-math-input > .ProseMirror {
+  outline: none;
+}
