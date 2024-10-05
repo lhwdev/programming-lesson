@@ -6,25 +6,24 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { findChildren } from "@tiptap/react";
 import { CodeBlock } from "./TiptapCodeBlock";
 
-const name = "code_shiki";
-
 export const CodeBlockShiki = CodeBlock.extend({
-  name,
+  name: "code_shiki",
+
   addProseMirrorPlugins() {
     return [
       ...this.parent?.() || [],
-      shikiPlugin(),
+      shikiPlugin(this.name),
     ];
   },
 });
 
-function shikiPlugin() {
+function shikiPlugin(name: string) {
   const shikiPlugin: Plugin<DecorationSet> = new Plugin<DecorationSet>({
     key: new PluginKey(name),
     state: {
       init(_, instance) {
         if(!highlighterCache) return DecorationSet.empty;
-        return getDecorations(instance.doc, highlighterCache);
+        return getDecorations(instance.doc, name, highlighterCache);
       },
       apply(tr, decorationSet, oldState, newState) {
         if(!highlighterCache) return decorationSet;
@@ -57,7 +56,7 @@ function shikiPlugin() {
               );
             }))
         ) {
-          return getDecorations(tr.doc, highlighterCache);
+          return getDecorations(tr.doc, name, highlighterCache);
         }
 
         return decorationSet.map(tr.mapping, tr.doc);
@@ -72,12 +71,12 @@ function shikiPlugin() {
   return shikiPlugin;
 }
 
-function getDecorations(doc: Node, highlighter: HighlighterCore) {
+function getDecorations(doc: Node, name: string, highlighter: HighlighterCore) {
   const decorations: Decoration[] = [];
   const theme = highlighter.getTheme("vitesse-light");
 
   findChildren(doc, (node) => node.type.name === name).forEach((block) => {
-    const language = block.node.attrs.language || "python";
+    const language = block.node.attrs.language || "plain";
     const languages = highlighter.getLoadedLanguages();
 
     const hasLanguage = language && (languages.includes(language) || language === "plain" || language === "text");
@@ -89,8 +88,8 @@ function getDecorations(doc: Node, highlighter: HighlighterCore) {
     const tokens = highlighter.codeToTokens(block.node.textContent, { lang: language, theme }).tokens;
 
     const offset = block.pos + 1;
-    for (const tokenLine of tokens) {
-      for (const token of tokenLine) {
+    for(const tokenLine of tokens) {
+      for(const token of tokenLine) {
         const from = token.offset;
         const to = from + token.content.length;
         let decoration;

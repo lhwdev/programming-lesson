@@ -4,7 +4,6 @@ import "./MathView.css";
 import { Text } from "@mantine/core";
 import { RiSquareRoot } from "react-icons/ri";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const katex_ = katex as any;
 
 type Cls<T> = { new (...args: unknown[]): T };
@@ -21,7 +20,7 @@ type MathResult = { node: ReactNode; error?: undefined } | { node?: undefined; e
 
 export function useMathView(tex: string, options: KatexOptions) {
   return useMemo(() => {
-    if (tex === "") return { node: true };
+    if(tex === "") return { node: true };
     try {
       // TODO: 'output: "html"': support mathml for accessibility and paste-ability?
       const tree = katex_.__renderToDomTree(tex, { ...options, output: "html" } satisfies KatexOptions);
@@ -31,7 +30,7 @@ export function useMathView(tex: string, options: KatexOptions) {
         node: <RootNode className="bn-math-view">{result}</RootNode>,
       };
     } catch (e) {
-      if (e instanceof katex.ParseError) {
+      if(e instanceof katex.ParseError) {
         return { error: e };
       } else {
         throw e;
@@ -41,8 +40,8 @@ export function useMathView(tex: string, options: KatexOptions) {
 }
 
 export function MathView({ result }: { result: MathResult }) {
-  if (result.node) {
-    if (result.node === true) { // tex === ""
+  if(result.node) {
+    if(result.node === true) { // tex === ""
       return <MathPlaceholder type="default">새로운 수학공식</MathPlaceholder>;
     }
     return result.node;
@@ -88,10 +87,10 @@ function toNode(tag: string, node: HtmlDomNode) {
 }
 
 function KatexNode({ node }: { node: VirtualNode }) {
-  if (node instanceof Span) {
+  if(node instanceof Span) {
     return toNode("span", node);
   }
-  if (node instanceof Anchor) {
+  if(node instanceof Anchor) {
     return toNode("a", node);
   }
   // if(node instanceof Img) {
@@ -104,7 +103,7 @@ function KatexNode({ node }: { node: VirtualNode }) {
   //     />
   //   );
   // }
-  if (node instanceof SymbolNode) {
+  if(node instanceof SymbolNode) {
     return (
       <span
         className={classes(node.classes)}
@@ -114,18 +113,18 @@ function KatexNode({ node }: { node: VirtualNode }) {
       </span>
     );
   }
-  if (node instanceof SvgNode) {
+  if(node instanceof SvgNode) {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" {...node.attributes}>
         {node.children.map((child) => <KatexNode node={child} />)}
       </svg>
     );
   }
-  if (node instanceof PathNode) {
+  if(node instanceof PathNode) {
     const dom = node.toNode() as SVGPathElement;
     return <path d={dom.getAttribute("d")!} />;
   }
-  if (node instanceof LineNode) {
+  if(node instanceof LineNode) {
     return <line {...node.attributes} />;
   }
   console.error("unknown node", node);

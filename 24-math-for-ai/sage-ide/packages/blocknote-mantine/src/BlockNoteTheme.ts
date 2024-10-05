@@ -38,7 +38,7 @@ export const applyBlockNoteCSSVariablesFromTheme = (theme: Theme) => {
   const result: Record<string, string> = {};
 
   function traverse(current: NestedObject, currentKey = "--bn") {
-    for (const key in current) {
+    for(const key in current) {
       const kebabCaseKey = key
         .replace(/([a-z])([A-Z])/g, "$1-$2")
         .toLowerCase();

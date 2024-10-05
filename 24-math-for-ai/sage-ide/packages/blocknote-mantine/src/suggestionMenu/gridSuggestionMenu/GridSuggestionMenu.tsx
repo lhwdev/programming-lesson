@@ -14,7 +14,7 @@ export const GridSuggestionMenu = forwardRef<
   return (
     <div
       className={bnClsx(className)}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` } as any}
       ref={ref}
       id={id}

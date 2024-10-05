@@ -33,8 +33,7 @@ export const SuggestionMenuItem = forwardRef<
 
     if(overflow === "top") {
       itemRef.current.scrollIntoView(true);
-    }
-    else if(overflow === "bottom") {
+    } else if(overflow === "bottom") {
       itemRef.current.scrollIntoView(false);
     }
   }, [isSelected]);

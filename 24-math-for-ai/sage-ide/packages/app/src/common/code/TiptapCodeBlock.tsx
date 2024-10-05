@@ -39,6 +39,7 @@ export interface CodeBlockOptions {
    * @example 'js'
    */
   defaultLanguage: string | null | undefined;
+
   /**
    * Custom HTML attributes that should be added to the rendered HTML tag.
    * @default {}
@@ -91,6 +92,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
       exitOnTripleEnter: true,
       exitOnArrowDown: true,
       defaultLanguage: null,
+      allowChangeLanguage: false,
       HTMLAttributes: {},
     };
   },
@@ -139,19 +141,22 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
 
   renderHTML({ node, HTMLAttributes }) {
     return [
-      "pre",
+      "div",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-      [
-        "code",
-        {
-          class: clsx(
-            node.attrs.language
-              ? this.options.languageClassPrefix + node.attrs.language
-              : null,
-            "pm-code-block",
-          ),
-        },
-        0,
+
+      ["pre", {},
+        [
+          "code",
+          {
+            class: clsx(
+              node.attrs.language
+                ? this.options.languageClassPrefix + node.attrs.language
+                : null,
+              "pm-code-block",
+            ),
+          },
+          0,
+        ],
       ],
     ];
   },
@@ -172,15 +177,18 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
   addKeyboardShortcuts() {
     return {
       "Tab": () => this.editor.commands.command(({ state, tr }) => {
-        if(state.selection.empty) {
+        const selection = state.selection;
+        if(selection.$from.parent.type.name !== this.name) return false;
+        if(selection.empty) {
           tr.insertText("\t");
         } else {
-          const from = state.selection.$from;
+          const from = selection.$from;
           const { parentOffset, parentText, lineStart } = findLine(this.name, from);
-          const to = state.selection.to;
+          const to = selection.$to;
+          if(from.sameParent(to)) return false;
           let index = lineStart;
           tr.insertText("\t", parentOffset + index);
-          while (index <= to) {
+          while (index <= to.pos) {
             if(
               isNewLine(parentText[index])
               && (index + 1 >= parentText.length || !isNewLine(parentText[index + 1]))
@@ -194,7 +202,9 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
       }),
 
       "Shift-Tab": () => this.editor.commands.command(({ state, tr }) => {
-        if(state.selection.empty) {
+        const selection = state.selection;
+        if(selection.$from.parent.type.name !== this.name) return false;
+        if(selection.empty) {
           const { parentText, parentOffset, lineStart } = findLine(this.name, state.selection.$from);
           if(parentText[lineStart] === "\t") {
             tr.replace(parentOffset + lineStart, parentOffset + lineStart + 1, Slice.empty);
@@ -230,6 +240,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
 
       "Shift-Enter": ({ editor }) => {
         if(this.options.enterAction) {
+          if(editor.state.selection.$anchor.parent.type.name !== this.name) return false;
           return editor.commands.command(({ tr }) => {
             tr.insertText("\n");
             return true;
@@ -240,6 +251,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
       },
 
       "Enter": ({ editor }) => {
+        if(editor.state.selection.$anchor.parent.type.name !== this.name) return false;
         if(this.options.enterAction?.()) return true;
 
         const { state } = editor;

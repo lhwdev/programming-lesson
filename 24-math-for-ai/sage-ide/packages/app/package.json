@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@blocknote/core": "^0.15.10",
+    "@blocknote/core": "^0.15.11",
     "@blocknote/mantine": "workspace:*",
-    "@blocknote/react": "^0.15.10",
+    "@blocknote/react": "workspace:*",
     "@emotion/react": "^11.13.3",
     "@mantine/core": "^7.13.0",
     "@mantine/hooks": "^7.13.0",

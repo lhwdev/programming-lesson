@@ -1,6 +1,7 @@
 code.pm-code-block {
   font-family: unset;
   tab-size: 2;
+  min-height: 1em;
 }
 
 pre:has(> .pm-code-block) {

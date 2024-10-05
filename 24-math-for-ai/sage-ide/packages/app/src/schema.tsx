@@ -5,22 +5,26 @@ import { BasicTextStyleButton, BlockTypeSelect, ColorStyleButton, CreateLinkButt
 import { MathInline } from "./blocks/math/MathInline";
 import { CodeInline } from "./inlines/CodeInline";
 import { ReactNode } from "react";
+import { CodeBlock } from "./blocks/code/CodeBlock";
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
     ...defaultBlockSpecs,
 
     alert: Alert,
+    codeBlock: CodeBlock,
   },
   inlineContentSpecs: {
     ...defaultInlineContentSpecs,
-    math_inline: MathInline,
+    mathInline: MathInline,
   },
   styleSpecs: {
     ...defaultStyleSpecs,
-    code_inline: CodeInline,
+    codeInline: CodeInline,
   },
 });
+
+export type Schema = typeof schema;
 
 export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
   const dictionary = editor.dictionary;
@@ -28,7 +32,8 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
     advanced: dictionary.slash_menu.table.group,
   };
   const all = [
-    ...getDefaultReactSlashMenuItems(editor),
+    ...getDefaultReactSlashMenuItems(editor)
+      .filter((item) => (item as any).key !== "emoji"),
     {
       title: "박스",
       subtext: "경고, 정보, 알림과 같은 정보를 표시합니다.",
@@ -52,7 +57,7 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
       title: "수식",
       subtext: "본문 중간에 수식을 추가합니다.",
       onItemClick: () => {
-        editor.insertInlineContent([{ type: "math_inline" }]);
+        editor.insertInlineContent([{ type: "mathInline" }]);
       },
       aliases: [
         "수식",
@@ -68,7 +73,7 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
       title: "코드",
       subtext: "코드 블럭을 추가합니다.",
       onItemClick: () => {
-        // TODO
+        insertOrUpdateBlock(editor, { type: "codeBlock", props: { language: "python" } });
       },
       aliases: [
         "코드",
@@ -79,16 +84,16 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
     },
   ];
   const grouped = new Map();
-  for (const item of all) {
+  for(const item of all) {
     let group = grouped.get(item.group);
-    if (!group) {
+    if(!group) {
       group = [];
       grouped.set(item.group, group);
     }
     group.push(item);
   }
   const result = [];
-  for (const group of grouped.values()) {
+  for(const group of grouped.values()) {
     result.push(...group);
   }
   return result;
@@ -140,7 +145,7 @@ export function MyFormattingToolbar() {
       <CreateLinkButton key="createLinkButton" />
 
       <ToggleStyleButton
-        name="code_inline"
+        name="codeInline"
         label="코드"
         icon={<RiCodeFill />}
       />
@@ -164,6 +169,7 @@ function ToggleStyleButton({ name, label, icon }: {
       label={label}
       mainTooltip={label}
       icon={icon}
+      isSelected={!!editor.getActiveStyles()[name]}
       onClick={() => {
         editor.toggleStyles({ [name]: true });
       }}

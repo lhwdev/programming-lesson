@@ -49,7 +49,7 @@ export function SimpleCodeBlockEditor({ value, language, options: options_ = {},
     },
   });
   useMemo(() => {
-    if (!editor) return;
+    if(!editor) return;
     value.attachController(() => editor.getText());
   }, [editor]);
 

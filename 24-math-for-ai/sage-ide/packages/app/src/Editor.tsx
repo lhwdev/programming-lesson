@@ -17,6 +17,7 @@ export function Editor() {
       formattingToolbar={false}
       slashMenu={false}
       sideMenu={false}
+      emojiPicker={false}
     >
       <FormattingToolbarController formattingToolbar={MyFormattingToolbar} />
 

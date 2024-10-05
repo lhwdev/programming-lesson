@@ -31,7 +31,7 @@ export const Panel = forwardRef<
         className={bnClsx()}
         value={openTab}
         defaultValue={defaultOpenTab}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         onChange={setOpenTab as any}
       >
         {loading && <MantineLoadingOverlay visible={loading} />}

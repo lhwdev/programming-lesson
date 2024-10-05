@@ -4,7 +4,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import react from "eslint-plugin-react";
 import globals from "globals";
 
-/** @type {import("eslint").Linter.FlatConfig[]} */
+/** @type {import("eslint").Linter.Config[]} */
 export default [
   eslint.configs.recommended,
   ...typescriptEslint.configs.recommended,
@@ -17,7 +17,7 @@ export default [
   }),
   react.configs.flat["jsx-runtime"],
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["packages/*/src/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -27,6 +27,8 @@ export default [
         after: true,
         overrides: {
           if: { after: false },
+          for: { after: false },
+          do: { after: false },
           switch: { after: false },
         },
       }],

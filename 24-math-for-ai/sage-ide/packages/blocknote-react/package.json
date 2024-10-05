@@ -1,0 +1,27 @@
+{
+  "name": "@blocknote/react",
+  "version": "0.15.11",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./style.css": "./src/style.css"
+  },
+  "dependencies": {
+    "@blocknote/core": "^0.15.11",
+    "@floating-ui/react": "^0.26.4",
+    "@tiptap/core": "^2.7.4",
+    "@tiptap/pm": "^2.7.4",
+    "@tiptap/react": "^2.7.4",
+    "lodash.merge": "^4.6.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "@types/lodash.foreach": "^4.5.9",
+    "@types/lodash.groupby": "^4.6.9",
+    "@types/lodash.merge": "^4.6.9"
+  }
+}
