@@ -7,7 +7,7 @@
     "./style.css": "./src/style.css"
   },
   "dependencies": {
-    "@blocknote/core": "^0.15.10",
+    "@blocknote/core": "workspace:*",
     "@blocknote/react": "workspace:*",
     "@emotion/react": "^11.13.3",
     "@mantine/core": "^7.13.0",

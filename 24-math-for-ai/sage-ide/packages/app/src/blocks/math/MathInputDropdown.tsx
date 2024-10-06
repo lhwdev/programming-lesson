@@ -13,10 +13,10 @@ export function MathInputDropdown({ strings, opened, setOpened, content, onChang
   strings: Strings;
   content: string;
   onChange: (content: string) => void;
-  onEnter: (value: string) => void;
+  onEnter: (value: string, direction?: "left" | "right") => void;
   children?: ReactNode;
 }) {
-  const dropdownKey = useCounter(opened);
+  const dropdownKey = useCounter(opened, (before, after) => !before && after);
 
   return (
     <Popover
@@ -48,7 +48,7 @@ function DropdownContent({ content, onChange, strings, onEnter }: {
   content: string;
   onChange: (content: string) => void;
   strings: Strings;
-  onEnter: (value: string) => void;
+  onEnter: (value: string, direction?: "left" | "right") => void;
 }) {
   return (
     <Stack gap="4px">

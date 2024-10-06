@@ -87,6 +87,7 @@ export * from "./hooks/useEditorSelectionChange";
 export * from "./hooks/usePrefersColorScheme";
 export * from "./hooks/useSelectedBlocks";
 
+export * from "./schema/ReactNodeCommon";
 export * from "./schema/ReactBlockSpec";
 export * from "./schema/ReactInlineContentSpec";
 export * from "./schema/ReactStyleSpec";

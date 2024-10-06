@@ -7,7 +7,7 @@
     "./style.css": "./src/style.css"
   },
   "dependencies": {
-    "@blocknote/core": "^0.15.11",
+    "@blocknote/core": "workspace:*",
     "@floating-ui/react": "^0.26.4",
     "@tiptap/core": "^2.7.4",
     "@tiptap/pm": "^2.7.4",

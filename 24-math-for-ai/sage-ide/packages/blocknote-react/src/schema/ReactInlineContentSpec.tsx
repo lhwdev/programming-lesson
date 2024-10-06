@@ -2,13 +2,11 @@ import {
   addInlineContentAttributes,
   addInlineContentKeyboardShortcuts,
   BlockNoteEditor,
-  BlockNoteSchema,
   BlockSchema,
   camelToDataKebab,
   createInternalInlineContentSpec,
   createStronglyTypedTiptapNode,
   CustomInlineContentConfig,
-  DefaultBlockSchema,
   getInlineContentParseRules,
   InlineContentFromConfig,
   InlineContentSchema,
@@ -22,7 +20,6 @@ import {
   StyleSchema,
 } from "@blocknote/core";
 import {
-  KeyboardShortcutCommand,
   NodeViewContent,
   NodeViewProps,
   NodeViewWrapper,
@@ -55,6 +52,7 @@ export interface ReactInlineContentImplementation<
 > extends ReactCommonImplementation<T, InlineContentNode<T, I, S>, B, I, S> {
   render: FC<{
     node: InlineContentNode<T, I, S>;
+    editor: BlockNoteEditor<B, I, S>;
     inlineContent: InlineContentFromConfig<T, S>;
     updateInlineContent: (
       update: PartialCustomInlineContentFromConfig<T, S>
@@ -130,10 +128,19 @@ export function createReactInlineContentSpec<
 
     addKeyboardShortcuts() {
       return ReactNodeCommonHelper.addKeyboardShortcuts(
+        this,
         this.options.editor,
         impl,
         addInlineContentKeyboardShortcuts(inlineContentConfig),
       );
+    },
+
+    addInputRules() {
+      return impl.inputRules?.(this) ?? [];
+    },
+
+    addProseMirrorPlugins() {
+      return ReactNodeCommonHelper.addProseMirrorPlugins(this.options.editor, this, impl);
     },
 
     parseHTML() {
@@ -141,7 +148,7 @@ export function createReactInlineContentSpec<
     },
 
     renderHTML({ node }) {
-      const editor = this.options.editor as BlockNoteEditor<DefaultBlockSchema, I, S>;
+      const editor = this.options.editor as BlockNoteEditor<B, I & { [Key in T["type"]]: T }, S>;
 
       const ic = nodeToCustomInlineContent(
         node,
@@ -155,9 +162,12 @@ export function createReactInlineContentSpec<
             node={{
               type: ic.type,
               props: ic.props as any,
+              _pmNode: node,
+              pos: -1,
               replace(_) {},
               remove() {},
             }}
+            editor={editor}
             inlineContent={ic}
             updateInlineContent={() => {
               // No-op
@@ -178,7 +188,7 @@ export function createReactInlineContentSpec<
 
     // TODO: needed?
     addNodeView() {
-      const editor = this.options.editor as BlockNoteEditor<DefaultBlockSchema, I, S>;
+      const editor = this.options.editor as BlockNoteEditor<B, I & { [Type in T["type"]]: T }, S>;
       return (props) =>
         ReactNodeViewRenderer(
           (props: NodeViewProps) => {
@@ -190,8 +200,11 @@ export function createReactInlineContentSpec<
               editor.schema.styleSchema,
             ) as any as InlineContentFromConfig<T, S>; // TODO: fix cast
             const backingState = useUpdated(inlineContent);
+            const latestProps = useUpdated(props);
             const node: InlineContentNode<T, I, S> = useMemo(() => ({
               get type() { return backingState.type; },
+              get _pmNode() { return latestProps.node; },
+              get pos() { return latestProps.getPos(); },
               get props() { return backingState.props as any; },
               set props(updated) {
                 this.replace([{ ...inlineContent, props: updated } as any]);
@@ -231,6 +244,7 @@ export function createReactInlineContentSpec<
                 <Content
                   contentRef={ref}
                   node={node}
+                  editor={editor}
                   inlineContent={inlineContent}
                   updateInlineContent={(update) => {
                     const content = inlineContentToNodes(

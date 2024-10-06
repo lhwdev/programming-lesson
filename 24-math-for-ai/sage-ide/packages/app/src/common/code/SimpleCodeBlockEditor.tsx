@@ -1,37 +1,53 @@
 import "./SimpleCodeBlockEditor.css";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { Content, Editor, EditorContent, Extension, Extensions, useEditor, UseEditorOptions } from "@tiptap/react";
 import { Document } from "@tiptap/extension-document";
 import { Text } from "@tiptap/extension-text";
 import { History } from "@tiptap/extension-history";
 import { CodeBlockShiki } from "./TiptapCodeBlockShiki";
 import { HTMLProps, useMemo } from "react";
-import { UncontrolledValue } from "@/common/uncontrolledValue";
+import { UncontrolledValue, useOnControlledChange } from "@/common/uncontrolledValue";
 import { EditorProps } from "@tiptap/pm/view";
 import clsx from "clsx";
 import { useUpdated } from "@/utils/useUpdated";
+import { AllSelection, Plugin, PluginKey } from "@tiptap/pm/state";
 
 interface Options {
   placeholder?: string;
+  initialSelection?: "all";
   enterAction?: () => boolean;
+  leaveAction?: (direction?: "left" | "right") => void;
   onChange?: (content: string) => void;
 }
 
+function initial(content: string, language: string): Content {
+  return {
+    type: "doc",
+    content: [{
+      type: "code_shiki",
+      attrs: { language },
+      content: content
+        ? [{
+            type: "text",
+            text: content,
+          }]
+        : [],
+    }],
+  };
+}
+
 export function SimpleCodeBlockEditor({ value, language, options: options_ = {}, editorProps, ...other }: {
-  value: UncontrolledValue<string>;
+  value: string | UncontrolledValue<string>;
   language: string;
   options?: Partial<Options>;
   editorProps?: EditorProps;
 } & Omit<HTMLProps<HTMLDivElement>, "ref" | "value">) {
+  // eslint-disable-next-line prefer-const
+  let editor: Editor | null;
+  const controlled = useOnControlledChange(value, (newValue) => editor!.commands.setContent(initial(newValue, language)));
   const options = useUpdated(options_);
-  const editor = useEditor({
-    content: {
-      type: "doc",
-      content: [{
-        type: "code_shiki",
-        text: value.value,
-        attrs: { language },
-      }],
-    },
+  const valueNow = typeof value === "string" ? value : value.value;
+  const editorOptions = useMemo<UseEditorOptions>(() => ({
+    content: initial(valueNow, language),
     extensions: [
       Document,
       Text,
@@ -42,16 +58,54 @@ export function SimpleCodeBlockEditor({ value, language, options: options_ = {},
           return options.enterAction?.() ?? false;
         },
       }),
-    ],
+      options.leaveAction && Extension.create({
+        addProseMirrorPlugins: () => [new Plugin({
+          key: new PluginKey("arrowToLeave"),
+          props: {
+            handleKeyDown(view, event) {
+              if(event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return false;
+              const anchor = view.state.selection.$anchor;
+              const isEmpty = view.state.selection.empty;
+              if(
+                anchor.textOffset === 0
+              ) {
+                if(event.key === "ArrowLeft" && !anchor.nodeBefore && isEmpty) {
+                  options.leaveAction?.("left");
+                } else if(event.key === "ArrowRight" && !anchor.nodeAfter && isEmpty) {
+                  options.leaveAction?.("right");
+                }
+              }
+            },
+          },
+        })],
+      }),
+    ].filter((t) => t) as Extensions,
     editorProps,
-    onUpdate({ transaction }) {
-      options.onChange?.(transaction.doc.textContent);
+    onCreate({ editor }) {
+      const sel = options.initialSelection;
+      if(sel) editor.commands.command(({ tr }) => {
+        if(sel === "all" && valueNow !== "") {
+          tr.setSelection(new AllSelection(tr.doc));
+        }
+        tr.setMeta("addToHistory", false);
+        return true;
+      });
     },
-  });
+    onUpdate({ transaction }) {
+      if(options.onChange) {
+        const newValue = transaction.doc.textContent;
+        controlled.expectChanged(newValue);
+        options.onChange?.(newValue);
+      }
+    },
+  }), []);
+  editor = useEditor(editorOptions);
   useMemo(() => {
     if(!editor) return;
-    value.attachController(() => editor.getText());
-  }, [editor]);
+    if(typeof value === "object") {
+      value.attachController(() => editor.getText());
+    }
+  }, [value, editor]);
 
   return (
     <>

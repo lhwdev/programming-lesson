@@ -16,7 +16,7 @@ export interface CodeBlockOptions {
    */
   root: boolean;
 
-  enterAction: (() => boolean) | null;
+  enterAction?: () => boolean;
 
   /**
    * Adds a prefix to language classes that are applied to code tags.
@@ -87,7 +87,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
   addOptions() {
     return {
       root: false,
-      enterAction: null,
+      leaveAction: () => false,
       languageClassPrefix: "language-",
       exitOnTripleEnter: true,
       exitOnArrowDown: true,

@@ -7,6 +7,9 @@ import {
   createInternalBlockSpec,
   createStronglyTypedTiptapNode,
   CustomBlockConfig,
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+  DefaultStyleSchema,
   getBlockFromPos,
   getParseRules,
   inheritedProps,
@@ -31,9 +34,10 @@ import {
 } from "@tiptap/react";
 import { FC, ReactNode, useMemo } from "react";
 import { renderToDOMSpec } from "./@util/ReactRenderUtil";
-import { ReactCommonImplementation, ReactCommonNode } from "./ReactNodeCommon";
+import { ReactCommonImplementation, ReactCommonNode, ReactNodeCommonHelper } from "./ReactNodeCommon";
 import { useUpdated } from "../util/useUpdated";
 import "../types/BlockContainer";
+import { NodeSpec } from "@tiptap/pm/model";
 
 // this file is mostly analogoues to `customBlocks.ts`, but for React blocks
 
@@ -129,36 +133,59 @@ export function BlockContentWrapper<
 }
 
 interface ExtendedConfig {
-  code?: boolean;
+  contentNoStyle?: boolean;
+  isCode?: boolean;
+
+  customParseHTML?: () => NodeSpec["parseDOM"];
 }
 
 // A function to create custom block for API consumers
 // we want to hide the tiptap node from API consumers and provide a simpler API surface instead
 export function createReactBlockSpec<
   const T extends CustomBlockConfig & ExtendedConfig,
-  const B extends BlockSchema,
-  const I extends InlineContentSchema,
-  const S extends StyleSchema,
+  B extends BlockSchema = DefaultBlockSchema,
+  I extends InlineContentSchema = DefaultInlineContentSchema,
+  S extends StyleSchema = DefaultStyleSchema,
 >(
   blockConfig: T,
-  blockImplementation: ReactCustomBlockImplementation<T, B & BlockSchemaWithBlock<T["type"], T>, I, S>,
+  impl: ReactCustomBlockImplementation<T, B & BlockSchemaWithBlock<T["type"], T>, I, S>,
 ) {
   const node = createStronglyTypedTiptapNode({
     name: blockConfig.type as T["type"],
     content: (blockConfig.content === "inline"
-      ? "inline*"
+      ? blockConfig.contentNoStyle ? "text*" : "inline*"
       : "") as T["content"] extends "inline" ? "inline*" : "",
+
+    marks: blockConfig.contentNoStyle ? "" : undefined,
+
     group: "blockContent",
     selectable: blockConfig.isSelectable ?? true,
 
-    code: blockConfig.code,
+    code: blockConfig.isCode,
 
     addAttributes() {
       return propsToAttributes(blockConfig.propSchema);
     },
 
+    addKeyboardShortcuts() {
+      return ReactNodeCommonHelper.addKeyboardShortcuts(
+        this,
+        this.options.editor,
+        impl,
+        {},
+      );
+    },
+
+    addInputRules() {
+      return impl.inputRules?.(this) ?? [];
+    },
+
+    addProseMirrorPlugins() {
+      return ReactNodeCommonHelper.addProseMirrorPlugins(this.options.editor, this, impl);
+    },
+
     parseHTML() {
-      return getParseRules(blockConfig, blockImplementation.parse);
+      return getParseRules(blockConfig, impl.parse);
     },
 
     renderHTML() {
@@ -186,13 +213,17 @@ export function createReactBlockSpec<
               blockConfig.type,
             );
             const updatedBlock = useUpdated(block);
+            const latestProps = useUpdated(props);
             const node = useMemo<BlockNode<T, B & BlockSchemaWithBlock<T["type"], T>, I, S>>(() => ({
               get data() { return updatedBlock.$current; },
               get type() { return updatedBlock.type; },
               get id() { return updatedBlock.id; },
-              get props() { return updatedBlock.props; },
+              get _pmNode() { return latestProps.node; },
+              get pos() { return latestProps.getPos(); },
+              get props() { console.log("get", updatedBlock.props); return updatedBlock.props; },
               set props(newProps) {
                 this.update({ props: newProps });
+                updatedBlock.props = newProps; console.log("set", newProps);
               },
               get content() { return updatedBlock.content; },
               set content(newContent) {
@@ -215,7 +246,7 @@ export function createReactBlockSpec<
             // hacky, should export `useReactNodeView` from tiptap to get access to ref
             const ref = (NodeViewContent({}) as any).ref;
 
-            const BlockContent = blockImplementation.render;
+            const BlockContent = impl.render;
             return (
               <BlockContentWrapper
                 blockType={block.type}
@@ -252,7 +283,7 @@ export function createReactBlockSpec<
       const blockContentDOMAttributes
         = node.options.domAttributes?.blockContent || {};
 
-      const BlockContent = blockImplementation.render;
+      const BlockContent = impl.render;
       const output = renderToDOMSpec(
         (refCB) => (
           <BlockContentWrapper
@@ -279,7 +310,7 @@ export function createReactBlockSpec<
         = node.options.domAttributes?.blockContent || {};
 
       const BlockContent
-        = blockImplementation.toExternalHTML || blockImplementation.render;
+        = impl.toExternalHTML || impl.render;
       const output = renderToDOMSpec((refCB) => {
         return (
           <BlockContentWrapper

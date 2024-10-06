@@ -61,7 +61,7 @@ export const UploadTab = <
               };
             }
             editor.updateBlock(block, updateData);
-          } catch (e) {
+          } catch (_) {
             setUploadFailed(true);
           } finally {
             setLoading(false);

@@ -1,3 +1,3 @@
 # sage-ide
 
-Work in progress
+Work in progress: mathml for MathView

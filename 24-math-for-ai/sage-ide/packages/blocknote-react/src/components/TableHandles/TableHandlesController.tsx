@@ -46,7 +46,6 @@ export const TableHandlesController = <
           mousePos: state?.draggingState?.mousePos,
         }
       : undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     state?.draggingState,
     state?.draggingState?.draggedCellOrientation,

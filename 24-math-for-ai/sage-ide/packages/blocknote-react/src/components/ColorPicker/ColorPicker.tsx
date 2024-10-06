@@ -39,7 +39,7 @@ export const ColorPicker = (props: {
             {colors.map((color) => (
               <Components.Generic.Menu.Item
                 onClick={() => {
-                  props.onClick && props.onClick();
+                  props.onClick?.();
                   props.text!.setColor(color);
                 }}
                 data-test={"text-color-" + color}
@@ -64,7 +64,7 @@ export const ColorPicker = (props: {
             {colors.map((color) => (
               <Components.Generic.Menu.Item
                 onClick={() => {
-                  props.onClick && props.onClick();
+                  props.onClick?.();
                   props.background!.setColor(color);
                 }}
                 data-test={"background-color-" + color}

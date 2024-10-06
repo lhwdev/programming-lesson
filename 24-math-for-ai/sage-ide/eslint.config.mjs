@@ -32,6 +32,9 @@ export default [
           switch: { after: false },
         },
       }],
+      "@stylistic/multiline-ternary": ["warn", "always-multiline", {
+        ignoreJSX: true,
+      }],
       "@typescript-eslint/no-unused-vars": ["warn", {
         args: "all",
         argsIgnorePattern: "^_",

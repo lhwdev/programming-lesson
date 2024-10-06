@@ -1,6 +1,6 @@
 import "@mantine/core/styles.css";
-import { PropsWithChildren } from "react";
 import "./App.css";
+import { PropsWithChildren } from "react";
 import { Editor } from "./Editor";
 import { createTheme, MantineProvider } from "@mantine/core";
 

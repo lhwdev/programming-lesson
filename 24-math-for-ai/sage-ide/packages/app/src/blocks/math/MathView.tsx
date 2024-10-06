@@ -93,6 +93,7 @@ function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof Anchor) {
     return toNode("a", node);
   }
+  // Only used for external image direction (which is blocked by default)
   // if(node instanceof Img) {
   //   return (
   //     <img
@@ -127,6 +128,18 @@ function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof LineNode) {
     return <line {...node.attributes} />;
   }
+
+  // In this case, MathML node or polymorphic thingy
+  // TODO: will this change for build?
+  const name = node.constructor.name;
+  if(name === "MathNode") {
+
+  }
+  if(name === "TextNode") {
+
+  }
+  if(name === "SpaceNode") {}
+
   console.error("unknown node", node);
   throw new Error(`unknown node ${node.constructor?.name ?? node}`);
 }
@@ -186,3 +199,25 @@ interface LineNode extends VirtualNode {
 }
 
 type SvgChildNode = PathNode | LineNode;
+
+// MathML
+
+interface MathDOMNode extends VirtualNode {
+  toText(): string;
+}
+
+interface MathNode extends MathDOMNode {
+  type: string;
+  attributes: Record<string, string>;
+  children: MathDOMNode[];
+  classes: string[];
+}
+
+interface TextNode extends MathDOMNode {
+  text: string;
+}
+
+interface SpaceNode extends MathDOMNode {
+  width: number;
+  character?: string;
+}

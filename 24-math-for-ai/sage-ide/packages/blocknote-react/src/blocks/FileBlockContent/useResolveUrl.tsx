@@ -22,7 +22,7 @@ export function useResolveUrl(fetchUrl: string) {
 
       try {
         url = await editor.resolveFileUrl(fetchUrl);
-      } catch (error) {
+      } catch (_error) {
         setLoadingState("error");
         return;
       }

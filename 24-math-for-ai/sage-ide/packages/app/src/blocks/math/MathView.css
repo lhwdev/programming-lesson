@@ -2,10 +2,14 @@
 
 span.bn-math-view {
   user-select: all;
+  display: inline-flex;
 }
 
 [aria-expanded="true"] > span.bn-math-view {
   background-color: var(--selection-color);
+}
+[aria-expanded="true"] > span.bn-math-view ::selection {
+  background-color: transparent;
 }
 
 .bn-math-view-placeholder {
