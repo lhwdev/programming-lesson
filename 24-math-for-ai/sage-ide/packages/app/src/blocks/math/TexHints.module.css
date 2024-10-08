@@ -1,0 +1,27 @@
+.tabs {
+  width: 500px;
+  height: 300px;
+}
+
+.page {
+  height: 100%;
+  overflow-y: scroll;
+  padding: 8px;
+}
+
+.tiny-tiles {
+  display: flex;
+  align-content: start;
+  flex-wrap: wrap;
+  gap: 4px;
+  & > * {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}

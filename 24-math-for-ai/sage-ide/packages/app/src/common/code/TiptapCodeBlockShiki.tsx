@@ -1,6 +1,6 @@
 import { Node } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { highlighterCache } from "./highlight";
+import { highlighterCache } from "@sage-ide/common/code/highlight.ts";
 import { HighlighterCore } from "shiki/core";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { findChildren } from "@tiptap/react";

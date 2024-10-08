@@ -8,7 +8,7 @@ import { HTMLProps, useMemo } from "react";
 import { UncontrolledValue, useOnControlledChange } from "@/common/uncontrolledValue";
 import { EditorProps } from "@tiptap/pm/view";
 import clsx from "clsx";
-import { useUpdated } from "@/utils/useUpdated";
+import { useUpdated } from "@sage-ide/common/utils/useUpdated.ts";
 import { AllSelection, Plugin, PluginKey } from "@tiptap/pm/state";
 
 interface Options {

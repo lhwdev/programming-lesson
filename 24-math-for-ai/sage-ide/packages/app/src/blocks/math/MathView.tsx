@@ -1,8 +1,11 @@
 import katex, { KatexOptions } from "katex";
-import { CSSProperties, ReactNode, useMemo } from "react";
+import React, { CSSProperties, memo, ReactNode, useMemo } from "react";
 import "./MathView.css";
 import { Text } from "@mantine/core";
 import { RiSquareRoot } from "react-icons/ri";
+import clsx_ from "clsx";
+
+const clsx = (...inputs: Parameters<typeof clsx_>) => inputs.length === 0 ? undefined : clsx_(...inputs);
 
 const katex_ = katex as any;
 
@@ -18,13 +21,17 @@ const { Span, Anchor, SymbolNode, SvgNode, PathNode, LineNode }: {
 
 type MathResult = { node: ReactNode; error?: undefined } | { node?: undefined; error: katex.ParseError };
 
+export function katexRenderToNode(tex: string, options: KatexOptions): VirtualNode {
+  return katex_.__renderToDomTree(tex, { ...options, output: "htmlAndMathml" } satisfies KatexOptions);
+}
+
 export function useMathView(tex: string, options: KatexOptions) {
   return useMemo(() => {
     if(tex === "") return { node: true };
     try {
       // TODO: 'output: "html"': support mathml for accessibility and paste-ability?
-      const tree = katex_.__renderToDomTree(tex, { ...options, output: "html" } satisfies KatexOptions);
-      const result = <KatexNode node={tree} />;
+      const tree = katexRenderToNode(tex, options);
+      const result = <RootKatexNode node={tree} />;
       const RootNode = options.displayMode ? "div" : "span";
       return {
         node: <RootNode className="bn-math-view">{result}</RootNode>,
@@ -69,8 +76,8 @@ function makeEm(n: number) {
   return `${n.toFixed(4)}em`;
 }
 
-function classes(classes: string[]) {
-  return classes.filter((c) => c).join(" ");
+function mapChildren(children?: VirtualNode[]) {
+  return children?.map((child, index) => <KatexNode key={index} node={child} />);
 }
 
 function toNode(tag: string, node: HtmlDomNode) {
@@ -78,15 +85,17 @@ function toNode(tag: string, node: HtmlDomNode) {
   return (
     <Tag
       {...node.attributes}
-      className={classes(node.classes)}
+      className={clsx(...node.classes)}
       style={node.style}
     >
-      {node.children?.map((child) => <KatexNode node={child} />)}
+      {mapChildren(node.children)}
     </Tag>
   );
 }
 
-function KatexNode({ node }: { node: VirtualNode }) {
+export const RootKatexNode = memo(KatexNode);
+
+export function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof Span) {
     return toNode("span", node);
   }
@@ -107,7 +116,7 @@ function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof SymbolNode) {
     return (
       <span
-        className={classes(node.classes)}
+        className={clsx(...node.classes)}
         style={{ marginRight: node.italic > 0 ? makeEm(node.italic) : 0, ...node.style }}
       >
         {node.text}
@@ -117,7 +126,7 @@ function KatexNode({ node }: { node: VirtualNode }) {
   if(node instanceof SvgNode) {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" {...node.attributes}>
-        {node.children.map((child) => <KatexNode node={child} />)}
+        {mapChildren(node.children)}
       </svg>
     );
   }
@@ -129,16 +138,38 @@ function KatexNode({ node }: { node: VirtualNode }) {
     return <line {...node.attributes} />;
   }
 
-  // In this case, MathML node or polymorphic thingy
-  // TODO: will this change for build?
   const name = node.constructor.name;
-  if(name === "MathNode") {
+  // Common tree
+  if(name === "DocumentFragment") {
+    const n = node as DocumentFragment;
+    return <>{mapChildren(n.children)}</>;
+  }
 
+  // MathML node
+  if(name === "MathNode") {
+    const n = node as MathNode;
+    const Tag = n.type as MathNodeType;
+    return (
+      <Tag
+        xmlns={Tag === "math" ? "http://www.w3.org/1998/Math/MathML" : undefined}
+        {...n.attributes}
+        className={clsx(...n.classes)}
+      >
+        {mapChildren(n.children)}
+      </Tag>
+    );
   }
   if(name === "TextNode") {
-
+    return (node as TextNode).text;
   }
-  if(name === "SpaceNode") {}
+  if(name === "SpaceNode") {
+    const n = node as SpaceNode;
+    if(n.character) {
+      return n.character;
+    } else {
+      return <mspace width={makeEm(n.width)} />;
+    }
+  }
 
   console.error("unknown node", node);
   throw new Error(`unknown node ${node.constructor?.name ?? node}`);
@@ -151,7 +182,7 @@ interface VirtualNode {
   toMarkup(): string;
 }
 
-interface HtmlDomNode {
+interface HtmlDomNode extends VirtualNode {
   classes: string[];
   style: CSSProperties;
   attributes?: Record<string, string>;
@@ -160,6 +191,15 @@ interface HtmlDomNode {
   hasClass(className: string): boolean;
 }
 
+// Common
+interface DocumentFragment extends HtmlDomNode {
+  children: VirtualNode[];
+  height: number;
+  depth: number;
+  maxFontSize: number;
+}
+
+// DOM
 interface Span extends HtmlDomNode {
   children: VirtualNode[];
   attributes: Record<string, string>;
@@ -201,6 +241,14 @@ interface LineNode extends VirtualNode {
 type SvgChildNode = PathNode | LineNode;
 
 // MathML
+type MathNodeType =
+  "math" | "annotation" | "semantics" |
+  "mtext" | "mn" | "mo" | "mi" | "mspace" |
+  "mover" | "munder" | "munderover" | "msup" | "msub" | "msubsup" |
+  "mfrac" | "mroot" | "msqrt" |
+  "mtable" | "mtr" | "mtd" | "mlabeledtr" |
+  "mrow" | "menclose" |
+  "mstyle" | "mpadded" | "mphantom" | "mglyph";
 
 interface MathDOMNode extends VirtualNode {
   toText(): string;
@@ -220,4 +268,37 @@ interface TextNode extends MathDOMNode {
 interface SpaceNode extends MathDOMNode {
   width: number;
   character?: string;
+}
+
+// @types/react does not support MathML elements, but it actually exists
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface MathMLAttributes<T> extends React.AriaAttributes, React.DOMAttributes<T> {
+      width?: CSSProperties["width"];
+
+      autofocus?: boolean;
+      className?: string;
+      dir?: "ltr" | "rtl" | string;
+      displaystyle?: boolean;
+      id?: string;
+      mathbackground?: CSSProperties["backgroundColor"];
+      mathcolor?: CSSProperties["color"];
+      mathsize?: CSSProperties["fontSize"];
+      nonce?: string;
+      scriptlevel?: `${"+" | "-" | ""}${number}`;
+      style?: CSSProperties;
+      tabIndex?: number;
+
+      xmlns?: string | undefined;
+    }
+
+    type IntrinsicMathMLElements = {
+      [Key in MathNodeType]: React.DetailedHTMLProps<MathMLAttributes<MathMLElement>, MathMLElement>;
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    interface IntrinsicElements extends IntrinsicMathMLElements {
+    }
+  }
 }

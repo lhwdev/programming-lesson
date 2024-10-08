@@ -20,7 +20,13 @@
     "preview": "pnpm --filter @sage-ide/app run preview"
   },
   "dependencies": {
+    "@shikijs/monaco": "^1.21.1",
+    "@typefox/pyright-browser": "^1.1.299",
     "eslint-plugin-react": "^7.37.1",
-    "globals": "^15.9.0"
+    "globals": "^15.9.0",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^9.0.3",
+    "monaco-languageclient": "^8.8.3",
+    "shiki": "^1.20.0",
+    "vscode": "npm:@codingame/monaco-vscode-api@^9.0.3"
   }
 }

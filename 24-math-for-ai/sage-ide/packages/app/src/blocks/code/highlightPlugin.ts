@@ -1,4 +1,4 @@
-import { highlighterCache } from "@/common/code/highlight";
+import { highlighterCache } from "@sage-ide/common/code/highlight.ts";
 import { ReactNodeInfo } from "@blocknote/react";
 import { findChildren } from "@tiptap/core";
 import { Node, NodeType } from "@tiptap/pm/model";

@@ -1,0 +1,17 @@
+{
+  "name": "@sage-ide/monaco-block",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@sage-ide/common": "workspace:*",
+    "@shikijs/monaco": "catalog:",
+    "@typefox/pyright-browser": "^1.1.299",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^9.0.3",
+    "monaco-languageclient": "^8.8.3",
+    "shiki": "catalog:",
+    "vscode": "npm:@codingame/monaco-vscode-api@^9.0.3"
+  }
+}
