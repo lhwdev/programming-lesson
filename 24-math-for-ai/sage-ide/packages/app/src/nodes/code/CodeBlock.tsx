@@ -206,6 +206,7 @@ export const CodeBlock = createReactBlockSpec(
       return (
         <CodeBlockView
           language={block.props.language}
+          setLanguage={(language) => block.props = { ...block.props, language }}
           contentRef={contentRef}
         />
       );

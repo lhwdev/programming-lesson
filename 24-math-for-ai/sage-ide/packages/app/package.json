@@ -4,7 +4,6 @@
   "type": "module",
   "dependencies": {
     "@sage-ide/common": "workspace:*",
-    "@sage-ide/monaco-block": "workspace:*",
     "@blocknote/core": "workspace:*",
     "@blocknote/mantine": "workspace:*",
     "@blocknote/react": "workspace:*",

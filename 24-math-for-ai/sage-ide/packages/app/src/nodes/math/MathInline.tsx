@@ -23,8 +23,9 @@ export const MathInline = createReactInlineContentSpec(
       },
 
       "ArrowLeft": (editor) => {
-        const anchor = editor._tiptapEditor.state.selection.$anchor;
-        console.log("AL", anchor.textOffset, anchor.nodeBefore);
+        const selection = editor._tiptapEditor.state.selection;
+        if(!selection.empty) return false;
+        const anchor = selection.$anchor;
         if(anchor.textOffset === 0) {
           const candidate = anchor.nodeBefore;
           if(candidate?.type === type) {
@@ -38,7 +39,9 @@ export const MathInline = createReactInlineContentSpec(
       },
 
       "ArrowRight": (editor) => {
-        const anchor = editor._tiptapEditor.state.selection.$anchor;
+        const selection = editor._tiptapEditor.state.selection;
+        if(!selection.empty) return false;
+        const anchor = selection.$anchor;
         if(anchor.textOffset === 0) {
           const candidate = anchor.nodeAfter;
           if(candidate?.type === type) {
@@ -95,7 +98,16 @@ export const MathInline = createReactInlineContentSpec(
             setOpened(false, direction);
           }}
         >
-          <MathView result={math} />
+          <span
+            onClick={() => setOpened(true)}
+            onDragStart={(event) => {
+              if(editor._tiptapEditor.state.selection.empty) {
+                //  event.preventDefault();
+              }
+            }}
+          >
+            <MathView result={math} />
+          </span>
         </MathInputDropdown>
       );
     },

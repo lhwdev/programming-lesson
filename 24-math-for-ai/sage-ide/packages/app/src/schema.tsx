@@ -1,11 +1,11 @@
 import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, defaultStyleSpecs, insertOrUpdateBlock } from "@blocknote/core";
 import { RiBox1Fill, RiCalculatorFill, RiCodeFill } from "react-icons/ri";
-import { Alert } from "./blocks/Alert";
+import { Alert } from "./nodes/Alert";
 import { BasicTextStyleButton, BlockTypeSelect, ColorStyleButton, CreateLinkButton, FileCaptionButton, FileReplaceButton, FormattingToolbar, getDefaultReactSlashMenuItems, NestBlockButton, TextAlignButton, UnnestBlockButton, useBlockNoteEditor, useComponentsContext } from "@blocknote/react";
-import { MathInline } from "./blocks/math/MathInline";
-import { CodeInline } from "./inlines/CodeInline";
+import { MathInline } from "./nodes/math/MathInline";
+import { CodeInline } from "./nodes/codeInline/CodeInline";
 import { ReactNode } from "react";
-import { CodeBlock } from "./blocks/code/CodeBlock";
+import { CodeBlock } from "./nodes/code/CodeBlock";
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {

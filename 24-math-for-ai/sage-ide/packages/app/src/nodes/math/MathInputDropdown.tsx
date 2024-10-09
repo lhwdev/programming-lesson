@@ -28,9 +28,7 @@ export function MathInputDropdown({ strings, opened, setOpened, content, onChang
       shadow="md"
     >
       <Popover.Target>
-        <span onSelect={() => setOpened(true)} onClick={() => setOpened(true)}>
-          {children}
-        </span>
+        {children}
       </Popover.Target>
       <Popover.Dropdown>
         <DropdownContent
@@ -77,7 +75,12 @@ function DropdownContent({ content, onChange, strings, onEnter }: {
         </Stack>
       </Popover.Target>
       <Popover.Dropdown p="0">
-        <TexHints insertTex={(tex) => {}} close={() => setHintsOpen(false)} />
+        <TexHints
+          insertTex={(tex) => {
+
+          }}
+          close={() => setHintsOpen(false)}
+        />
       </Popover.Dropdown>
     </Popover>
   );

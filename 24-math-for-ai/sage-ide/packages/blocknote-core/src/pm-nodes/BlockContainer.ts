@@ -280,9 +280,9 @@ export const BlockContainer = Node.create<{
                   },
                 );
               } else {
-              // use replaceWith to replace the content and the block itself
-              // also  reset the selection since replacing the block content
-              // sets it to the next block.
+                // use replaceWith to replace the content and the block itself
+                // also  reset the selection since replacing the block content
+                // sets it to the next block.
                 state.tr
                   .replaceWith(
                     startPos,
@@ -301,12 +301,13 @@ export const BlockContainer = Node.create<{
                   .setSelection(
                     state.schema.nodes[newType].spec.content === ""
                       ? new NodeSelection(state.tr.doc.resolve(startPos))
-                      : state.schema.nodes[newType].spec.content === "inline*"
-                        ? new TextSelection(state.tr.doc.resolve(startPos))
-                      // Need to offset the position as we have to get through the
-                      // `tableRow` and `tableCell` nodes to get to the
-                      // `tableParagraph` node we want to set the selection in.
-                        : new TextSelection(state.tr.doc.resolve(startPos + 4)),
+                      : state.schema.nodes[newType].spec.content === "tableRow+"
+                        // Need to offset the position as we have to get through the
+                        // `tableRow` and `tableCell` nodes to get to the
+                        // `tableParagraph` node we want to set the selection in.
+                        ? new TextSelection(state.tr.doc.resolve(startPos + 4))
+                        : new TextSelection(state.tr.doc.resolve(startPos)),
+
                   );
               }
 

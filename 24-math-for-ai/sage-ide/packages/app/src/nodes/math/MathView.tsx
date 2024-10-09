@@ -19,22 +19,29 @@ const { Span, Anchor, SymbolNode, SvgNode, PathNode, LineNode }: {
   LineNode: Cls<LineNode>;
 } = katex_.__domTree;
 
-type MathResult = { node: ReactNode; error?: undefined } | { node?: undefined; error: katex.ParseError };
+type MathResult = { node: ReactNode; error?: undefined } |
+  { node?: undefined; error: katex.ParseError };
 
 export function katexRenderToNode(tex: string, options: KatexOptions): VirtualNode {
   return katex_.__renderToDomTree(tex, { ...options, output: "htmlAndMathml" } satisfies KatexOptions);
 }
 
-export function useMathView(tex: string, options: KatexOptions) {
+const EmptyTex = <div />;
+
+export function useMathView(tex: string, options: KatexOptions): MathResult {
   return useMemo(() => {
-    if(tex === "") return { node: true };
+    if(tex === "") return { node: EmptyTex };
     try {
       // TODO: 'output: "html"': support mathml for accessibility and paste-ability?
       const tree = katexRenderToNode(tex, options);
       const result = <RootKatexNode node={tree} />;
       const RootNode = options.displayMode ? "div" : "span";
       return {
-        node: <RootNode className="bn-math-view">{result}</RootNode>,
+        node: (
+          <RootNode className="bn-math-view">
+            {result}
+          </RootNode>
+        ),
       };
     } catch (e) {
       if(e instanceof katex.ParseError) {
@@ -48,7 +55,7 @@ export function useMathView(tex: string, options: KatexOptions) {
 
 export function MathView({ result }: { result: MathResult }) {
   if(result.node) {
-    if(result.node === true) { // tex === ""
+    if(result.node === EmptyTex) { // tex === ""
       return <MathPlaceholder type="default">새로운 수학공식</MathPlaceholder>;
     }
     return result.node;

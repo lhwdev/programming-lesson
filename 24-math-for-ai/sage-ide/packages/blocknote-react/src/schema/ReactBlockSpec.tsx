@@ -220,10 +220,10 @@ export function createReactBlockSpec<
               get id() { return updatedBlock.id; },
               get _pmNode() { return latestProps.node; },
               get pos() { return latestProps.getPos(); },
-              get props() { console.log("get", updatedBlock.props); return updatedBlock.props; },
+              get props() { return updatedBlock.props; },
               set props(newProps) {
                 this.update({ props: newProps });
-                updatedBlock.props = newProps; console.log("set", newProps);
+                updatedBlock.props = newProps;
               },
               get content() { return updatedBlock.content; },
               set content(newContent) {
@@ -265,6 +265,7 @@ export function createReactBlockSpec<
           },
           {
             className: "bn-react-node-view-renderer",
+            contentDOMElementTag: "span",
           },
         )(props) as NodeView<any>;
 

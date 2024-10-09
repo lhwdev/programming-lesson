@@ -165,6 +165,7 @@ export function createReactInlineContentSpec<
               _pmNode: node,
               pos: -1,
               replace(_) {},
+              update(_) {},
               remove() {},
             }}
             editor={editor}
@@ -208,6 +209,9 @@ export function createReactInlineContentSpec<
               get props() { return backingState.props as any; },
               set props(updated) {
                 this.replace([{ ...inlineContent, props: updated } as any]);
+              },
+              update(node) {
+                this.replace([{ ...inlineContent, ...node } as any]);
               },
               replace(newNode) {
                 const newAsNode = inlineContentToNodes<I, S>(

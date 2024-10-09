@@ -1,0 +1,55 @@
+@import url("../../common/style/iawriter-mono.css");
+
+:root[data-mantine-color-scheme="light"] {
+  --mantine-color-code-block: rgb(243, 244, 245);
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  --mantine-color-code-block: rgb(13, 14, 15);
+}
+
+.code-block {
+  position: relative;
+  width: 100%;
+
+  background-color: var(--mantine-color-code-block);
+  border-radius: 6px;
+}
+
+.code-block>pre {
+  white-space: pre !important;
+  margin: 0;
+  padding-block: 16px;
+  padding-inline: 16px 20px;
+
+  width: 100%;
+  overflow-x: auto;
+}
+
+.code-block>pre>code {
+  display: block;
+  min-width: 100%;
+
+  font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
+  font-size: calc(1em - 2px);
+
+  tab-size: 2;
+  min-height: 1em;
+}
+
+.buttons {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  display: flex;
+
+  border-radius: var(--mantine-radius-default);
+  background-color: color-mix(in srgb, var(--mantine-color-code-block) 70%, transparent);
+}
+
+.code-block:hover .language-button {
+  opacity: 1;
+}

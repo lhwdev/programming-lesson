@@ -192,9 +192,6 @@ importers:
       '@sage-ide/common':
         specifier: workspace:*
         version: link:../common
-      '@sage-ide/monaco-block':
-        specifier: workspace:*
-        version: link:../monaco-block
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.5.0
