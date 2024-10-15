@@ -5,7 +5,7 @@ import { BasicTextStyleButton, BlockTypeSelect, ColorStyleButton, CreateLinkButt
 import { MathInline } from "./nodes/math/MathInline";
 import { CodeInline } from "./nodes/codeInline/CodeInline";
 import { ReactNode } from "react";
-import { CodeBlock } from "./nodes/code/CodeBlock";
+import { CodeBlock } from "./nodes/codeBlock/CodeBlock";
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
@@ -19,8 +19,9 @@ export const schema = BlockNoteSchema.create({
     mathInline: MathInline,
   },
   styleSpecs: {
-    ...defaultStyleSpecs,
+    // Note: Order matters. When multiple styles are applied, styles that come first become parent.
     codeInline: CodeInline,
+    ...defaultStyleSpecs,
   },
 });
 
@@ -144,20 +145,21 @@ export function MyFormattingToolbar() {
 
       <CreateLinkButton key="createLinkButton" />
 
+      {/* <Code */}
       <ToggleStyleButton
         name="codeInline"
         label="코드"
+        shortcut="Ctrl+E"
         icon={<RiCodeFill />}
       />
-
-      {/* <Code */}
     </FormattingToolbar>
   );
 }
 
-function ToggleStyleButton({ name, label, icon }: {
+function ToggleStyleButton({ name, label, shortcut, icon }: {
   name: keyof (typeof schema)["styleSchema"];
   label: string;
+  shortcut?: string;
   icon: ReactNode;
 }) {
   const editor = useBlockNoteEditor(schema);
@@ -168,8 +170,9 @@ function ToggleStyleButton({ name, label, icon }: {
     <Components.FormattingToolbar.Button
       label={label}
       mainTooltip={label}
+      secondaryTooltip={shortcut}
       icon={icon}
-      isSelected={!!editor.getActiveStyles()[name]}
+      isSelected={editor.getActiveStyles()[name] === true}
       onClick={() => {
         editor.toggleStyles({ [name]: true });
       }}

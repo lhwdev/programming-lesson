@@ -33,7 +33,7 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
         position="bottom-start"
       >
         <Combobox.Target>
-          <div className={classes.buttons}>
+          <div className={classes.buttons} data-retain={combobox.dropdownOpened}>
             <Button
               size="compact-xs"
               color="gray"
@@ -50,7 +50,7 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
         </Combobox.Dropdown>
       </Combobox>
 
-      <pre>
+      <pre spellCheck={false}>
         <code
           className={clsx(language && `language-${language}`)}
         >

@@ -1,0 +1,14 @@
+.mantine-Button-root {
+  &[data-variant="variable-subtle"] {
+    height: max-content;
+    padding-block: 6px;
+
+    color: inherit;
+    background-color: rgba(0, 0, 0, 0);
+
+    &:hover {
+      color: inherit;
+      background-color: rgba(0, 0, 0, 0.12);
+    }
+  }
+}

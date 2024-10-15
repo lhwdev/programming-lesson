@@ -1,6 +1,7 @@
 import classes from "./TexHints.module.css";
 import { memo, useState } from "react";
-import { KatexNode, katexRenderToNode } from "./MathView";
+import { KatexNode, katexRenderToNode, VirtualNode } from "./MathView";
+import { SubtleButton } from "@sage-ide/common/components/Button/SubtleButton.tsx";
 import { ActionIcon, Button, Tabs, Tooltip } from "@mantine/core";
 import clsx from "clsx";
 
@@ -190,8 +191,31 @@ type Item = {
   fontSize?: string;
 };
 
+type CachedItem = Omit<Item, "example"> & { example: VirtualNode };
+type CachedPage = Omit<Page, "items"> & { items: CachedItem[] };
+
+function renderPages() {
+  const mapItem = (item: Item) => ({
+    ...item,
+    example: katexRenderToNode(item.example ?? item.value, { displayMode: false }),
+  });
+
+  const result: Record<string, CachedPage> = {};
+  for(const [k, page] of Object.entries(Pages)) {
+    result[k] = { ...page, items: page.items.map(mapItem) };
+  }
+  return result as Record<keyof Pages, CachedPage>;
+}
+
+let CachedPages: ReturnType<typeof renderPages> | null = null;
+
 export function TexHints(props: TexHintsProps) {
   const [pageIndex, setPageIndex] = useState<keyof Pages>("greek");
+  let pages = CachedPages;
+  if(!pages) {
+    pages = renderPages();
+    CachedPages = pages;
+  }
 
   return (
     <Tabs
@@ -201,9 +225,9 @@ export function TexHints(props: TexHintsProps) {
       onChange={(v) => setPageIndex(v as keyof Pages)}
     >
       <Tabs.List p="8px" pr="0">
-        {Object.entries(Pages).map(([k, page]) => <Tabs.Tab key={k} value={k}>{page.title}</Tabs.Tab>)}
+        {Object.entries(pages).map(([k, page]) => <Tabs.Tab key={k} value={k}>{page.title}</Tabs.Tab>)}
       </Tabs.List>
-      {Object.entries(Pages).map(([k, page]) => (
+      {Object.entries(pages).map(([k, page]) => (
         <Tabs.Panel key={k} value={k}>
           <Tooltip.Group openDelay={300} closeDelay={100}>
             <Page page={page} {...props} />
@@ -214,13 +238,15 @@ export function TexHints(props: TexHintsProps) {
   );
 }
 
-function Page({ page, ...props }: { page: Page } & TexHintsProps) {
+function Page({ page, ...props }: { page: CachedPage } & TexHintsProps) {
   return (
     <div className={clsx(classes.page, classes[page.layout])}>
       {page.items.map((item, index) => (
         <Item
           key={index}
-          Comp={(page.layout === "tinyTiles" ? ActionIcon : Button) as typeof Button}
+          Comp={(page.layout === "tinyTiles"
+            ? ActionIcon
+            : SubtleButton) as typeof Button}
           item={item}
           {...props}
         />
@@ -229,7 +255,7 @@ function Page({ page, ...props }: { page: Page } & TexHintsProps) {
   );
 }
 
-function Item({ item, Comp, insertTex }: { item: Item; Comp: typeof Button; insertTex: (tex: string) => void }) {
+function Item({ item, Comp, insertTex }: { item: CachedItem; Comp: typeof Button; insertTex: (tex: string) => void }) {
   const button = (
     <Comp
       variant="subtle"
@@ -251,7 +277,6 @@ function Item({ item, Comp, insertTex }: { item: Item; Comp: typeof Button; inse
 
 const SimpleKatex = memo(SimpleKatex_);
 
-function SimpleKatex_({ children }: { children: string }) {
-  const node = katexRenderToNode(children, { displayMode: true });
-  return <KatexNode node={node} />;
+function SimpleKatex_({ children }: { children: VirtualNode }) {
+  return <KatexNode node={children} />;
 }

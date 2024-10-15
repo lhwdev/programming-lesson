@@ -34,10 +34,10 @@ import {
 } from "@tiptap/react";
 import { FC, ReactNode, useMemo } from "react";
 import { renderToDOMSpec } from "./@util/ReactRenderUtil";
-import { ReactCommonImplementation, ReactCommonNode, ReactNodeCommonHelper } from "./ReactNodeCommon";
+import { ReactCommonImplementation, ReactCommonNodeWithProps, ReactNodeCommonHelper } from "./ReactNodeCommon";
 import { useUpdated } from "../util/useUpdated";
 import "../types/BlockContainer";
-import { NodeSpec } from "@tiptap/pm/model";
+import { NodeSpec, NodeType } from "@tiptap/pm/model";
 
 // this file is mostly analogoues to `customBlocks.ts`, but for React blocks
 
@@ -46,7 +46,7 @@ export interface BlockNode<
   B extends BlockSchema,
   I extends InlineContentSchema,
   S extends StyleSchema,
-> extends ReactCommonNode<T> {
+> extends ReactCommonNodeWithProps<T> {
   data: SpecificBlock<B & BlockSchemaWithBlock<T["type"], T>, T["type"], I, S>;
   readonly id: string;
   content: T["content"] extends "inline" ? InlineContent<I, S>[] : T["content"] extends "table" ? TableContent<I, S> : T["content"] extends "none" ? undefined : never;
@@ -72,7 +72,7 @@ export interface ReactCustomBlockImplementation<
   B extends BlockSchema,
   I extends InlineContentSchema,
   S extends StyleSchema,
-> extends ReactCommonImplementation<T, BlockNode<T, B, I, S>, B, I, S> {
+> extends ReactCommonImplementation<T, BlockNode<T, B, I, S>, B, I, S, { type: NodeType }> {
   render: FC<ReactCustomBlockRenderProps<T, B, I, S>>;
   toExternalHTML?: FC<ReactCustomBlockRenderProps<T, B, I, S>>;
   parse?: (
@@ -135,6 +135,8 @@ export function BlockContentWrapper<
 interface ExtendedConfig {
   contentNoStyle?: boolean;
   isCode?: boolean;
+  isIsolating?: boolean;
+  isDefining?: boolean;
 
   customParseHTML?: () => NodeSpec["parseDOM"];
 }
@@ -162,6 +164,8 @@ export function createReactBlockSpec<
     selectable: blockConfig.isSelectable ?? true,
 
     code: blockConfig.isCode,
+    isolating: blockConfig.isIsolating,
+    defining: blockConfig.isDefining,
 
     addAttributes() {
       return propsToAttributes(blockConfig.propSchema);

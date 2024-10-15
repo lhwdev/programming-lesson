@@ -9,3 +9,7 @@
   font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
   font-size: calc(1em - 2px);
 }
+
+*[data-text-color] .code-inline {
+  color: inherit;
+}

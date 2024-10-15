@@ -184,7 +184,7 @@ export function KatexNode({ node }: { node: VirtualNode }) {
 
 /// Type declarations
 
-interface VirtualNode {
+export interface VirtualNode {
   toNode(): Node;
   toMarkup(): string;
 }

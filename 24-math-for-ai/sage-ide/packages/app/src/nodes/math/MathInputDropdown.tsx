@@ -1,8 +1,10 @@
+import classes from "./MathInputDropdown.module.css";
 import { Anchor, Button, Group, Popover, Stack, Text } from "@mantine/core";
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { MathInput } from "./MathInput";
 import { useCounter } from "@sage-ide/common/utils/useCounter.ts";
 import { TexHints } from "./TexHints";
+import { Editor } from "@tiptap/react";
 
 interface Strings {
   placeholder: string;
@@ -26,6 +28,7 @@ export function MathInputDropdown({ strings, opened, setOpened, content, onChang
       middlewares={{}}
       trapFocus
       shadow="md"
+      position="bottom-start"
     >
       <Popover.Target>
         {children}
@@ -49,7 +52,9 @@ function DropdownContent({ content, onChange, strings, onEnter }: {
   strings: Strings;
   onEnter: (value: string, direction?: "left" | "right") => void;
 }) {
+  const editorRef = useRef<Editor>();
   const [hintsOpen, setHintsOpen] = useState(false);
+
   return (
     <Popover
       opened={hintsOpen}
@@ -58,26 +63,28 @@ function DropdownContent({ content, onChange, strings, onEnter }: {
       offset={20}
     >
       <Popover.Target>
-        <Stack gap="4px">
+        <Stack gap={0} w={360}>
           <Text size="xs" c="dimmed">
-            <Anchor c="blue" onClick={() => setHintsOpen(true)}>LaTeX 문법</Anchor>
+            <Anchor c="blue" onClick={() => setHintsOpen((v) => !v)}>LaTeX 문법</Anchor>
             에 맞게 수식 입력
           </Text>
-          <Group align="baseline">
+          <Group align="baseline" wrap="nowrap">
             <MathInput
               content={content}
               onChange={onChange}
               strings={strings}
               onSubmit={onEnter}
+              className={classes.variable}
+              editorRef={editorRef}
             />
-            <Button onClick={() => onEnter(content)}>완료</Button>
+            <Button size="sm" h="32px" p="0 14px" onClick={() => onEnter(content)}>완료</Button>
           </Group>
         </Stack>
       </Popover.Target>
       <Popover.Dropdown p="0">
         <TexHints
           insertTex={(tex) => {
-
+            editorRef.current!.commands.insertContent({ type: "text", text: tex });
           }}
           close={() => setHintsOpen(false)}
         />

@@ -31,7 +31,7 @@
   min-width: 100%;
 
   font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
-  font-size: calc(1em - 2px);
+  font-size: var(--mantine-font-size-sm);
 
   tab-size: 2;
   min-height: 1em;
@@ -50,6 +50,7 @@
   background-color: color-mix(in srgb, var(--mantine-color-code-block) 70%, transparent);
 }
 
-.code-block:hover .language-button {
+.code-block:hover .buttons,
+.buttons[data-retain="true"] {
   opacity: 1;
 }

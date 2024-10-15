@@ -2,9 +2,10 @@ import { createReactBlockSpec } from "@blocknote/react";
 import { CodeBlockView } from "./CodeBlockView";
 import { ResolvedPos, Slice } from "@tiptap/pm/model";
 import { insertOrUpdateBlock } from "@blocknote/core";
-import { Selection } from "@tiptap/pm/state";
-import { textblockTypeInputRule } from "@tiptap/core";
+import { AllSelection, Selection, TextSelection } from "@tiptap/pm/state";
+import { Editor, textblockTypeInputRule } from "@tiptap/core";
 import { codeBlockHighlightPlugin } from "./highlightPlugin";
+import { getLanguageFeature, LanguageFeature } from "./LanguageFeature";
 
 const options = {
   languageClassPrefix: "language-",
@@ -39,7 +40,10 @@ export const CodeBlock = createReactBlockSpec(
     },
     content: "inline",
     contentNoStyle: true,
+
     isCode: true,
+    isIsolating: true,
+    isDefining: true,
 
     customParseHTML() {
       return [
@@ -110,30 +114,31 @@ export const CodeBlock = createReactBlockSpec(
         return false;
       },
 
+      "Ctrl-Enter": (editor) => {
+        const tiptap = editor._tiptapEditor;
+        const anchor = tiptap.state.selection.$anchor;
+        const codeBlock = anchor.parent;
+        if(codeBlock.type != type) return false;
+
+        // find end of line
+        const { text, index, parentOffset } = traverseText(anchor);
+        let i = index;
+        while (i < text.length && !text[i].match(/\r|\n/)) i++;
+        return insertNewLine(tiptap, getLanguageFeature(codeBlock.attrs.language), parentOffset + i);
+      },
+
       "Enter": (editor) => {
         const tiptap = editor._tiptapEditor;
-        if(tiptap.state.selection.$anchor.parent.type !== type) return false;
+        const codeBlock = tiptap.state.selection.$anchor.parent;
+        if(codeBlock.type !== type) return false;
 
         const { state } = tiptap;
         const { selection } = state;
         const { $from, empty } = selection;
 
-        const newLine = () => {
-          return tiptap.commands.command(({ state, tr }) => {
-            const selection = state.selection.$from;
-            const line = findLine(selection).content;
-            let indentEnd = 0;
-            while (indentEnd < line.length) {
-              if(!line[indentEnd].match(/\s/)) break;
-              indentEnd++;
-            }
-            tr.insertText("\n" + line.slice(0, indentEnd), selection.pos);
-            return true;
-          });
-        };
         // exit node on triple enter
         const detectTripleEnter = () => {
-          if(!empty || $from.parent.type.name !== name) {
+          if(!empty) {
             return false;
           }
 
@@ -155,7 +160,7 @@ export const CodeBlock = createReactBlockSpec(
             .run();
         };
 
-        return detectTripleEnter() || newLine();
+        return detectTripleEnter() || insertNewLine(tiptap, getLanguageFeature(codeBlock.attrs.language));
       },
 
       // exit node on arrow down
@@ -192,6 +197,16 @@ export const CodeBlock = createReactBlockSpec(
 
         return tiptap.commands.exitCode();
       },
+
+      "Mod-a": (bnEditor) => bnEditor._tiptapEditor.commands.command(({ state, tr }) => {
+        const selection = state.selection;
+        if(selection.$anchor.parent.type === type && selection.$head.parent.type === type) {
+          tr.setSelection(new AllSelection(tr.doc));
+          return true;
+        } else {
+          return false;
+        }
+      }),
     }),
 
     inputRules: (info) => [
@@ -249,6 +264,15 @@ export const CodeBlock = createReactBlockSpec(
   },
 );
 
+function traverseText(pos: ResolvedPos) {
+  const parentOffset = pos.posAtIndex(0);
+  return {
+    text: pos.parent.textContent,
+    index: pos.pos - parentOffset,
+    parentOffset,
+  };
+}
+
 function findLine(selection: ResolvedPos, separator: (c: string) => boolean = (c) => !!c.match(/\r|\n/)) {
   const parent = selection.parent;
   console.assert(parent.type.name === name, `expected blockName(${name}) == parent(${parent.type.name})`);
@@ -274,19 +298,34 @@ function isNewLine(c: string) {
   return !!c.match(/\r|\n/);
 }
 
-/*
-import { CodeBlockShiki } from "@/common/code/TiptapCodeBlockShiki";
-import { createBlockSpecFromStronglyTypedTiptapNode } from "@blocknote/core";
-import classes from "./CodeBlock.module.css";
+function insertNewLine(tiptap: Editor, feature: LanguageFeature, position?: number) {
+  return tiptap.commands.command(({ state, tr }) => {
+    const selection = state.selection.$anchor;
+    const line = findLine(selection).content;
+    let indentEnd = 0;
+    while (indentEnd < line.length) {
+      if(!line[indentEnd].match(/\s/)) break;
+      indentEnd++;
+    }
+    const delta = feature.increaseIndent(line);
+    let indent = line.slice(0, indentEnd);
+    if(delta > 0) {
+      for(let i = 0; i < delta; i++) indent += "\t";
+    } else if(delta < 0) {
+      for(let i = -delta; i > 0; i--) {
+        if(indent.endsWith("\t")) {
+          indent = indent.slice(0, indent.length - 2);
+        } else {
+          break;
+        }
+      }
+    }
 
-export const CodeBlock = createBlockSpecFromStronglyTypedTiptapNode(
-  CodeBlockShiki
-    .extend({ name: "codeBlock", content: "inline*", group: "blockContent" })
-    .configure({ HTMLAttributes: { class: classes.codeBlock } }),
-  {
-    language: {
-      default: "python",
-    },
-  },
-);
-*/
+    const text = "\n" + indent;
+    tr.insertText(text, position ?? selection.pos);
+    if(position) {
+      tr.setSelection(new TextSelection(tr.doc.resolve(position + text.length)));
+    }
+    return true;
+  });
+};

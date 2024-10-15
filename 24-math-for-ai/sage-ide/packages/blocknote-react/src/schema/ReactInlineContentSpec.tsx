@@ -25,18 +25,18 @@ import {
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from "@tiptap/react";
-import { Slice } from "@tiptap/pm/model";
+import { NodeType, Slice } from "@tiptap/pm/model";
 // import { useReactNodeView } from "@tiptap/react/dist/packages/react/src/useReactNodeView";
 import { FC, useMemo } from "react";
 import { renderToDOMSpec } from "./@util/ReactRenderUtil";
 import { useUpdated } from "../util/useUpdated";
-import { ReactCommonImplementation, ReactCommonNode, ReactNodeCommonHelper } from "./ReactNodeCommon";
+import { ReactCommonImplementation, ReactCommonNodeWithProps, ReactNodeCommonHelper } from "./ReactNodeCommon";
 
 export interface InlineContentNode<
   T extends CustomInlineContentConfig,
   I extends InlineContentSchema,
   S extends StyleSchema,
-> extends ReactCommonNode<T> {
+> extends ReactCommonNodeWithProps<T> {
   // content: InlineContentNode<any, I, S>[];
 
   replace(newNode: PartialInlineContent<I, S>): void;
@@ -49,7 +49,7 @@ export interface ReactInlineContentImplementation<
   B extends BlockSchema,
   I extends InlineContentSchema,
   S extends StyleSchema,
-> extends ReactCommonImplementation<T, InlineContentNode<T, I, S>, B, I, S> {
+> extends ReactCommonImplementation<T, InlineContentNode<T, I, S>, B, I, S, { type: NodeType }> {
   render: FC<{
     node: InlineContentNode<T, I, S>;
     editor: BlockNoteEditor<B, I, S>;

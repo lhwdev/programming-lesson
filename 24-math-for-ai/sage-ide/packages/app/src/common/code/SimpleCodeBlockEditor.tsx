@@ -4,7 +4,7 @@ import { Document } from "@tiptap/extension-document";
 import { Text } from "@tiptap/extension-text";
 import { History } from "@tiptap/extension-history";
 import { CodeBlockShiki } from "./TiptapCodeBlockShiki";
-import { HTMLProps, useMemo } from "react";
+import { HTMLProps, MutableRefObject, useMemo } from "react";
 import { UncontrolledValue, useOnControlledChange } from "@/common/uncontrolledValue";
 import { EditorProps } from "@tiptap/pm/view";
 import clsx from "clsx";
@@ -17,6 +17,7 @@ interface Options {
   enterAction?: () => boolean;
   leaveAction?: (direction?: "left" | "right") => void;
   onChange?: (content: string) => void;
+  editorRef?: MutableRefObject<Editor | undefined>;
 }
 
 function initial(content: string, language: string): Content {
@@ -100,6 +101,7 @@ export function SimpleCodeBlockEditor({ value, language, options: options_ = {},
     },
   }), []);
   editor = useEditor(editorOptions);
+  if(options.editorRef && editor) options.editorRef.current = editor;
   useMemo(() => {
     if(!editor) return;
     if(typeof value === "object") {

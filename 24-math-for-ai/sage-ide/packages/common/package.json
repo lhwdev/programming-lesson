@@ -8,6 +8,7 @@
   "dependencies": {
     "react": "catalog:",
     "@types/react": "catalog:",
-    "shiki": "catalog:"
+    "shiki": "catalog:",
+    "@mantine/core": "catalog:"
   }
 }

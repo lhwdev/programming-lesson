@@ -49,14 +49,14 @@ export const defaultBlockSchema = getBlockSchemaFromSpecs(defaultBlockSpecs);
 // underscore is used that in case a user overrides DefaultBlockSchema,
 // they can still access the original default block schema
 export type _DefaultBlockSchema = typeof defaultBlockSchema;
-export type DefaultBlockSchema = _DefaultBlockSchema;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DefaultBlockSchema extends _DefaultBlockSchema {}
 
 export const defaultStyleSpecs = {
   bold: createStyleSpecFromTipTapMark(Bold, "boolean"),
   italic: createStyleSpecFromTipTapMark(Italic, "boolean"),
   underline: createStyleSpecFromTipTapMark(Underline, "boolean"),
   strike: createStyleSpecFromTipTapMark(Strike, "boolean"),
-  code: createStyleSpecFromTipTapMark(Code, "boolean"),
   textColor: TextColor,
   backgroundColor: BackgroundColor,
 } satisfies StyleSpecs;
@@ -66,7 +66,8 @@ export const defaultStyleSchema = getStyleSchemaFromSpecs(defaultStyleSpecs);
 // underscore is used that in case a user overrides DefaultStyleSchema,
 // they can still access the original default style schema
 export type _DefaultStyleSchema = typeof defaultStyleSchema;
-export type DefaultStyleSchema = _DefaultStyleSchema;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DefaultStyleSchema extends _DefaultStyleSchema {}
 
 export const defaultInlineContentSpecs = {
   text: { config: "text", implementation: {} as any },
@@ -80,7 +81,8 @@ export const defaultInlineContentSchema = getInlineContentSchemaFromSpecs(
 // underscore is used that in case a user overrides DefaultInlineContentSchema,
 // they can still access the original default inline content schema
 export type _DefaultInlineContentSchema = typeof defaultInlineContentSchema;
-export type DefaultInlineContentSchema = _DefaultInlineContentSchema;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DefaultInlineContentSchema extends _DefaultInlineContentSchema {}
 
 export type PartialBlock<
   BSchema extends BlockSchema = DefaultBlockSchema,
