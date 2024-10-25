@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@blocknote/core": "workspace:*",
+    "@sage-ide/common": "workspace:*",
     "@floating-ui/react": "catalog:",
     "@tiptap/core": "catalog:",
     "@tiptap/pm": "catalog:",

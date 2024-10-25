@@ -8,6 +8,7 @@
     "./fonts/inter.css": "./src/fonts/inter.css"
   },
   "dependencies": {
+    "@sage-ide/common": "workspace:*",
     "@emoji-mart/data": "^1.2.1",
     "@tiptap/core": "catalog:",
     "@tiptap/extension-bold": "^2.7.4",

@@ -23,6 +23,7 @@ export type SideMenuState<
   S extends StyleSchema,
 > = UiElementPosition & {
   // The block that the side menu is attached to.
+  nodePos: number;
   block: Block<BSchema, I, S>;
 };
 
@@ -30,7 +31,7 @@ export function getDraggableBlockFromElement(
   element: Element,
   view: EditorView,
 ) {
-  while (
+  while(
     element
     && element.parentElement
     && element.parentElement !== view.dom
@@ -400,6 +401,9 @@ export class SideMenuView<
     if(this.editor.isEditable) {
       const blockContentBoundingBox = blockContent.getBoundingClientRect();
 
+      const block = this.editor.getBlock(
+        this.hoveredBlock!.getAttribute("data-id")!,
+      )!;
       this.state = {
         show: true,
         referencePos: new DOMRect(
@@ -410,9 +414,8 @@ export class SideMenuView<
           blockContentBoundingBox.width,
           blockContentBoundingBox.height,
         ),
-        block: this.editor.getBlock(
-          this.hoveredBlock!.getAttribute("data-id")!,
-        )!,
+        block,
+        nodePos: block.pos,
       };
       this.needUpdate = true;
     }

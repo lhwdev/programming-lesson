@@ -268,6 +268,9 @@ importers:
       '@emoji-mart/data':
         specifier: ^1.2.1
         version: 1.2.1
+      '@sage-ide/common':
+        specifier: workspace:*
+        version: link:../common
       '@tiptap/core':
         specifier: 'catalog:'
         version: 2.7.4(@tiptap/pm@2.7.4)
@@ -470,6 +473,9 @@ importers:
       '@floating-ui/react':
         specifier: 'catalog:'
         version: 0.26.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@sage-ide/common':
+        specifier: workspace:*
+        version: link:../common
       '@tiptap/core':
         specifier: 'catalog:'
         version: 2.7.4(@tiptap/pm@2.7.4)

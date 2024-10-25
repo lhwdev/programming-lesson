@@ -84,7 +84,7 @@ export const BlockContainer = Node.create<{
             return false;
           }
 
-          const attrs: Record<string, string> = {};
+          const attrs: Record<string, any> = { selected: false };
           for(const [nodeAttr, HTMLAttr] of Object.entries(BlockAttributes)) {
             if(element.getAttribute(HTMLAttr)) {
               attrs[nodeAttr] = element.getAttribute(HTMLAttr)!;
@@ -101,7 +101,7 @@ export const BlockContainer = Node.create<{
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
     const blockOuter = document.createElement("div");
     blockOuter.className = "bn-block-outer";
     blockOuter.setAttribute("data-node-type", "blockOuter");
@@ -118,6 +118,7 @@ export const BlockContainer = Node.create<{
     const block = document.createElement("div");
     block.className = mergeCSSClasses("bn-block", blockHTMLAttributes.class);
     block.setAttribute("data-node-type", this.name);
+    block.setAttribute("data-block-selected", node.attrs.selected ? "true" : "false");
     for(const [attribute, value] of Object.entries(blockHTMLAttributes)) {
       if(attribute !== "class") {
         block.setAttribute(attribute, value);
@@ -379,7 +380,7 @@ export const BlockContainer = Node.create<{
             let prevBlockInfo = getBlockInfoFromPos(state.doc, prevBlockEndPos);
 
             // Finds the nearest previous block, regardless of nesting level.
-            while (prevBlockInfo!.numChildBlocks > 0) {
+            while(prevBlockInfo!.numChildBlocks > 0) {
               prevBlockEndPos--;
               prevBlockInfo = getBlockInfoFromPos(state.doc, prevBlockEndPos);
               if(prevBlockInfo === undefined) {
@@ -596,7 +597,7 @@ export const BlockContainer = Node.create<{
               let newPos = endPos + 2;
               let newDepth = state.doc.resolve(newPos).depth;
 
-              while (newDepth < oldDepth) {
+              while(newDepth < oldDepth) {
                 oldDepth = newDepth;
                 newPos += 2;
                 newDepth = state.doc.resolve(newPos).depth;

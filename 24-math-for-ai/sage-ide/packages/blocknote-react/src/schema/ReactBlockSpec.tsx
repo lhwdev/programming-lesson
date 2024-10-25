@@ -35,7 +35,7 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 import { renderToDOMSpec } from "./@util/ReactRenderUtil";
 import { ReactCommonImplementation, ReactCommonNodeWithProps, ReactNodeCommonHelper } from "./ReactNodeCommon";
-import { useUpdated } from "../util/useUpdated";
+import { useUpdated, useUpdatedRaw } from "@sage-ide/common/utils/useUpdated.ts";
 import "../types/BlockContainer";
 import { NodeSpec, NodeType } from "@tiptap/pm/model";
 
@@ -217,9 +217,10 @@ export function createReactBlockSpec<
               blockConfig.type,
             );
             const updatedBlock = useUpdated(block);
+            const updatedBlockRef = useUpdatedRaw(block);
             const latestProps = useUpdated(props);
             const node = useMemo<BlockNode<T, B & BlockSchemaWithBlock<T["type"], T>, I, S>>(() => ({
-              get data() { return updatedBlock.$current; },
+              get data() { return updatedBlockRef.current; },
               get type() { return updatedBlock.type; },
               get id() { return updatedBlock.id; },
               get _pmNode() { return latestProps.node; },

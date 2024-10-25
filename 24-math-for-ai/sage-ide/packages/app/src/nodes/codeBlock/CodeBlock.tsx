@@ -4,7 +4,7 @@ import { ResolvedPos, Slice } from "@tiptap/pm/model";
 import { insertOrUpdateBlock } from "@blocknote/core";
 import { AllSelection, Selection, TextSelection } from "@tiptap/pm/state";
 import { Editor, textblockTypeInputRule } from "@tiptap/core";
-import { codeBlockHighlightPlugin } from "./highlightPlugin";
+import { codeBlockHighlightPlugin } from "./plugins/highlightPlugin";
 import { getLanguageFeature, LanguageFeature } from "./LanguageFeature";
 
 const options = {
@@ -39,7 +39,7 @@ export const CodeBlock = createReactBlockSpec(
       },
     },
     content: "inline",
-    contentNoStyle: true,
+    // contentNoStyle: true,
 
     isCode: true,
     isIsolating: true,
@@ -94,7 +94,7 @@ export const CodeBlock = createReactBlockSpec(
       }),
 
       "Mod-Alt-c": (editor) => {
-        insertOrUpdateBlock(editor, { type: "codeBlock" });
+        insertOrUpdateBlock(editor as any, { type: "codeBlock" });
         return true;
       },
 
@@ -250,11 +250,11 @@ export const CodeBlock = createReactBlockSpec(
       // create a code block with the text node
       // replace selection with the code block
       insertOrUpdateBlock(
-        editor,
+        editor as any,
         { type: name,
           props: { language },
           content: [{ type: "text", styles: {}, text: text.replace(/\r\n?/g, "\n") }],
-        },
+        } as any,
       );
 
       return true;

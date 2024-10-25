@@ -1,0 +1,313 @@
+tm_default {
+  color: #393a34;
+  background: #ffffff
+}
+
+.tm-comment,
+.tm-punctuation_definition_comment,
+.tm-string_comment {
+  color: #a0ada0;
+}
+
+.tm-delimiter_bracket,
+.tm-delimiter,
+.tm-invalid_illegal_character-not-allowed-here_html,
+.tm-keyword_operator_rest,
+.tm-keyword_operator_spread,
+.tm-keyword_operator_type_annotation,
+.tm-keyword_operator_relational,
+.tm-keyword_operator_assignment,
+.tm-keyword_operator_type,
+.tm-meta_brace,
+.tm-meta_tag_block_any_html,
+.tm-meta_tag_inline_any_html,
+.tm-meta_tag_structure_input_void_html,
+.tm-meta_type_annotation,
+.tm-meta_embedded_block_github-actions-expression,
+.tm-storage_type_function_arrow,
+.tm-meta_objectliteral_ts,
+.tm-punctuation,
+.tm-punctuation_definition_string_begin_html_vue,
+.tm-punctuation_definition_string_end_html_vue {
+  color: #999999;
+}
+
+.tm-constant,
+.tm-entity_name_constant,
+.tm-variable_language,
+.tm-meta_definition_variable {
+  color: #a65e2b;
+}
+
+.tm-entity,
+.tm-entity_name {
+  color: #59873a;
+}
+
+.tm-variable_parameter_function {
+  color: #393a34;
+}
+
+.tm-entity_name_tag,
+.tm-tag_html {
+  color: #1e754f;
+}
+
+.tm-entity_name_function {
+  color: #59873a;
+}
+
+.tm-keyword,
+.tm-storage_type_class_jsdoc,
+.tm-punctuation_definition_template-expression {
+  color: #1e754f;
+}
+
+.tm-storage,
+.tm-storage_type,
+.tm-support_type_builtin,
+.tm-constant_language_undefined,
+.tm-constant_language_null,
+.tm-constant_language_import-export-all_ts {
+  color: #ab5959;
+}
+
+.tm-text_html_derivative,
+.tm-storage_modifier_package,
+.tm-storage_modifier_import,
+.tm-storage_type_java {
+  color: #393a34;
+}
+
+.tm-string,
+.tm-string_punctuation_section_embedded_source,
+.tm-attribute_value {
+  color: #b56959;
+}
+
+.tm-punctuation_definition_string {
+  color: #b5695977;
+}
+
+.tm-punctuation_support_type_property-name {
+  color: #99841877;
+}
+
+.tm-support {
+  color: #998418;
+}
+
+.tm-property,
+.tm-meta_property-name,
+.tm-meta_object-literal_key,
+.tm-entity_name_tag_yaml,
+.tm-attribute_name {
+  color: #998418;
+}
+
+.tm-entity_other_attribute-name,
+.tm-invalid_deprecated_entity_other_attribute-name_html {
+  color: #b07d48;
+}
+
+.tm-variable,
+.tm-identifier {
+  color: #b07d48;
+}
+
+.tm-support_type_primitive,
+.tm-entity_name_type {
+  color: #2e8f82;
+}
+
+.tm-namespace {
+  color: #b05a78;
+}
+
+.tm-keyword_operator,
+.tm-keyword_operator_assignment_compound,
+.tm-meta_var_expr_ts {
+  color: #ab5959;
+}
+
+.tm-invalid_broken {
+  color: #b31d28;
+  font-style: italic;
+}
+
+.tm-invalid_deprecated {
+  color: #b31d28;
+  font-style: italic;
+}
+
+.tm-invalid_illegal {
+  color: #b31d28;
+  font-style: italic;
+}
+
+.tm-invalid_unimplemented {
+  color: #b31d28;
+  font-style: italic;
+}
+
+.tm-carriage-return {
+  color: #fafbfc;
+  background: #d73a49font-style:italic;
+  text-decoration: underline;
+}
+
+.tm-message_error {
+  color: #b31d28;
+}
+
+.tm-string_variable {
+  color: #b56959;
+}
+
+.tm-source_regexp,
+.tm-string_regexp {
+  color: #ab5e3f;
+}
+
+.tm-string_regexp_character-class,
+.tm-string_regexp_constant_character_escape,
+.tm-string_regexp_source_ruby_embedded,
+.tm-string_regexp_string_regexp_arbitrary-repitition {
+  color: #b56959;
+}
+
+.tm-string_regexp_constant_character_escape {
+  color: #bda437;
+}
+
+.tm-support_constant {
+  color: #a65e2b;
+}
+
+.tm-keyword_operator_quantifier_regexp,
+.tm-constant_numeric,
+.tm-number {
+  color: #2f798a;
+}
+
+.tm-keyword_other_unit {
+  color: #ab5959;
+}
+
+.tm-constant_language_boolean,
+.tm-constant_language {
+  color: #1e754f;
+}
+
+.tm-meta_module-reference {
+  color: #1c6b48;
+}
+
+.tm-punctuation_definition_list_begin_markdown {
+  color: #a65e2b;
+}
+
+.tm-markup_heading,
+.tm-markup_heading_entity_name {
+  color: #1c6b48;
+  font-weight: bold;
+}
+
+.tm-markup_quote {
+  color: #2e808f;
+}
+
+.tm-markup_italic {
+  color: #393a34;
+  font-style: italic;
+}
+
+.tm-markup_bold {
+  color: #393a34;
+  font-weight: bold;
+}
+
+.tm-markup_raw {
+  color: #1c6b48;
+}
+
+.tm-markup_deleted,
+.tm-meta_diff_header_from-file,
+.tm-punctuation_definition_deleted {
+  color: #b31d28;
+  background: #ffeef0
+}
+
+.tm-markup_inserted,
+.tm-meta_diff_header_to-file,
+.tm-punctuation_definition_inserted {
+  color: #22863a;
+  background: #f0fff4
+}
+
+.tm-markup_changed,
+.tm-punctuation_definition_changed {
+  color: #e36209;
+  background: #ffebda
+}
+
+.tm-markup_ignored,
+.tm-markup_untracked {
+  color: #f6f8fa;
+  background: #005cc5
+}
+
+.tm-meta_diff_range {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.tm-meta_diff_header {
+  color: #005cc5;
+}
+
+.tm-meta_separator {
+  color: #005cc5;
+  font-weight: bold;
+}
+
+.tm-meta_output {
+  color: #005cc5;
+}
+
+.tm-brackethighlighter_tag,
+.tm-brackethighlighter_curly,
+.tm-brackethighlighter_round,
+.tm-brackethighlighter_square,
+.tm-brackethighlighter_angle,
+.tm-brackethighlighter_quote {
+  color: #586069;
+}
+
+.tm-brackethighlighter_unmatched {
+  color: #b31d28;
+}
+
+.tm-constant_other_reference_link,
+.tm-string_other_link,
+.tm-punctuation_definition_string_begin_markdown,
+.tm-punctuation_definition_string_end_markdown {
+  color: #b56959;
+}
+
+.tm-markup_underline_link_markdown,
+.tm-markup_underline_link_image_markdown {
+  color: #393a3490;
+  text-decoration: underline;
+}
+
+.tm-type_identifier,
+.tm-constant_other_character-class_regexp {
+  color: #5a6aa6;
+}
+
+.tm-entity_other_attribute-name_html_vue {
+  color: #59873a;
+}
+
+.tm-invalid_illegal_unrecognized-tag_html {}

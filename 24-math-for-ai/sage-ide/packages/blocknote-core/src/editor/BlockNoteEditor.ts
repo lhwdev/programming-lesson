@@ -567,14 +567,14 @@ export class BlockNoteEditor<
    */
   public getBlock(
     blockIdentifier: BlockIdentifier,
-  ): Block<BSchema, ISchema, SSchema> | undefined {
+  ): (Block<BSchema, ISchema, SSchema> & { pos: number }) | undefined {
     const id
       = typeof blockIdentifier === "string"
         ? blockIdentifier
         : blockIdentifier.id;
     let newBlock: Block<BSchema, ISchema, SSchema> | undefined = undefined;
 
-    this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
+    this._tiptapEditor.state.doc.firstChild!.descendants((node, pos) => {
       if(typeof newBlock !== "undefined") {
         return false;
       }
@@ -583,13 +583,14 @@ export class BlockNoteEditor<
         return true;
       }
 
-      newBlock = nodeToBlock(
+      const block = nodeToBlock(
         node,
         this.schema.blockSchema,
         this.schema.inlineContentSchema,
         this.schema.styleSchema,
         this.blockCache,
       );
+      newBlock = { ...block, pos } as any;
 
       return false;
     });

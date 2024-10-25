@@ -13,6 +13,15 @@ BASIC STYLES
   flex-direction: column;
 }
 
+.bn-block[data-block-selected="true"] {
+  border-radius: 4px;
+  outline: 4px solid rgb(100, 160, 255);
+}
+
+.bn-block[data-block-selected="true"] ::selection {
+  background-color: transparent;
+}
+
 .bn-block-content {
   display: flex;
   padding: 3px 0;
@@ -30,12 +39,12 @@ BASIC STYLES
   /*margin: 0px;*/
 }
 
-.bn-block-content.ProseMirror-selectednode > *,
-/* Case for node view renderers */
+/*.bn-block-content.ProseMirror-selectednode > *,
+/* Case for node view renderers * /
 .ProseMirror-selectednode > .bn-block-content > * {
   border-radius: 4px;
   outline: 4px solid rgb(100, 160, 255);
-}
+}*/
 
 /*
 NESTED BLOCKS

@@ -29,6 +29,10 @@ import {
   StyleSchema,
   StyleSpecs,
 } from "../schema";
+import { Plugin } from "prosemirror-state";
+import { ResolvedPos } from "prosemirror-model";
+import { BlockRangeSelection } from "../util/BlockSelection";
+import { BlockBehaviorExtension } from "../extensions/Block/BlockBehaviorExtension";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -113,6 +117,8 @@ export const getBlockNoteExtensions = <
         };
       },
     }),
+
+    BlockBehaviorExtension.configure({}),
 
     // nodes
     Doc,

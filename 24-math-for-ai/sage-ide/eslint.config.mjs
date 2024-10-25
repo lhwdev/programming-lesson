@@ -28,6 +28,7 @@ export default [
         overrides: {
           if: { after: false },
           for: { after: false },
+          while: { after: false },
           do: { after: false },
           switch: { after: false },
         },

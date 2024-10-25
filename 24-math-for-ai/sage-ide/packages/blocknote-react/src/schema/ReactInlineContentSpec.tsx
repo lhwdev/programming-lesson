@@ -29,7 +29,7 @@ import { NodeType, Slice } from "@tiptap/pm/model";
 // import { useReactNodeView } from "@tiptap/react/dist/packages/react/src/useReactNodeView";
 import { FC, useMemo } from "react";
 import { renderToDOMSpec } from "./@util/ReactRenderUtil";
-import { useUpdated } from "../util/useUpdated";
+import { useUpdated } from "@sage-ide/common/utils/useUpdated.ts";
 import { ReactCommonImplementation, ReactCommonNodeWithProps, ReactNodeCommonHelper } from "./ReactNodeCommon";
 
 export interface InlineContentNode<
