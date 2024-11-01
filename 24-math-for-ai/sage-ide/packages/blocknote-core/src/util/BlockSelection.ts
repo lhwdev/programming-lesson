@@ -1,55 +1,45 @@
 import { Fragment, Node, ResolvedPos, Slice } from "@tiptap/pm/model";
-import { Selection, SelectionRange } from "@tiptap/pm/state";
+import { EditorState, NodeSelection, Selection, SelectionRange } from "@tiptap/pm/state";
 import { Mapping } from "@tiptap/pm/transform";
-import { mergeObject } from "@sage-ide/common/utils/mergeObject.ts";
-import { dumpNodeShallow } from "./dump";
+import { resolvedNode, ResolvedNode, resolvedNodeFor, unresolvedNode } from "./ResolvedNode";
 
-export interface ResolvedNode extends Node {
-  backing: Node;
-
-  $pos: ResolvedPos;
-  pos: number;
+export function isBlockSelection(selection: Selection): selection is BlockSelection | NodeSelection {
+  return selection instanceof BlockSelection || selection instanceof NodeSelection;
 }
 
-export function resolvedNode($pos: ResolvedPos): ResolvedNode {
-  const node = $pos.nodeAfter;
-  if(!node) throw new Error(`no node for ${$pos}`);
-  return resolvedNodeFor(node, $pos);
+export function isSelectedNode(selection: Selection, node: Node) {
+  if(selection instanceof BlockSelection) {
+    return selection.nodes().some((selectedNode) => selectedNode.backing === node);
+  } else if(selection instanceof NodeSelection) {
+    return selection.$anchor.nodeAfter === node;
+  } else {
+    return false;
+  }
 }
 
-export function resolvedNodeFor(node: Node, $pos: ResolvedPos): ResolvedNode {
-  // if(typeof $pos === "function") {
-  //   return mergeObject(node, {
-  //     backing: node,
-  //     get $pos() {
-  //       const pos = $pos();
-  //       Object.defineProperty(this, "$pos", { value: pos, get: undefined });
-  //       return pos;
-  //     },
-  //     get pos() { return this.$pos.pos; },
-  //   });
-  // }
-  return mergeObject(node, {
-    backing: node,
-    $pos,
-    get pos() { return $pos.pos; },
-  });
-}
+export function findBlockContainer(state: EditorState, pos: ResolvedPos): { pos: number; node: Node } | null {
+  const container = state.schema.nodes.blockContainer;
+  if(pos.nodeAfter?.type === container) return { pos: pos.pos, node: pos.nodeAfter };
 
-export function unresolvedNode(node: Node, doc: Node, pos: number): ResolvedNode {
-  return mergeObject(node, {
-    backing: node,
-    get $pos() {
-      const $pos = doc.resolve(this.pos);
-      Object.defineProperty(this, "$pos", { value: $pos, get: undefined });
-      return $pos;
-    },
-    pos,
-  });
+  for(let depth = pos.depth; depth >= 0; depth--) {
+    const node = pos.node(depth);
+    if(node.type === container) return { pos: pos.start(depth) - 1, node };
+  }
+
+  return null;
 }
 
 export abstract class BlockSelection extends Selection {
-  abstract nodes(): ResolvedNode[];
+  protected abstract calculateNodes(): ResolvedNode[];
+
+  protected _nodes: ResolvedNode[] | null = null;
+  nodes(): ResolvedNode[] {
+    const previous = this._nodes;
+    if(previous) return previous;
+    const result = this.calculateNodes();
+    this._nodes = result;
+    return result;
+  }
 
   abstract anchorNode: ResolvedNode;
   abstract headNode: ResolvedNode;
@@ -72,8 +62,8 @@ export class BlockRangeSelection extends BlockSelection {
     if(anchorBlock.parent !== headBlock.parent) {
       const parentDepth = anchorBlock.sharedDepth(headBlock.pos);
       const doc = anchorBlock.doc;
-      anchorBlock = doc.resolve(anchorBlock.start(parentDepth));
-      headBlock = doc.resolve(headBlock.start(parentDepth));
+      anchorBlock = doc.resolve(anchorBlock.start(parentDepth + 1) - 1);
+      headBlock = doc.resolve(headBlock.start(parentDepth + 1) - 1);
     }
 
     const anchorNode = anchorBlock.nodeAfter;
@@ -91,18 +81,29 @@ export class BlockRangeSelection extends BlockSelection {
     this.headNode = resolvedNodeFor(headNode, headBlock);
   }
 
-  override nodes(): ResolvedNode[] {
+  static createFromEndpoint(anchor: ResolvedPos, head: ResolvedPos) {
+    const findStart = (pos: ResolvedPos) => {
+      const node = pos.nodeBefore;
+      if(!node) throw new Error("does not selecting the endpoint of node");
+      return pos.doc.resolve(pos.pos - node.nodeSize);
+    };
+    if(anchor.pos < head.pos) {
+      head = findStart(head);
+    } else {
+      anchor = findStart(anchor);
+    }
+    return new BlockRangeSelection(anchor, head);
+  }
+
+  override calculateNodes(): ResolvedNode[] {
     const fromPos = this.fromPos;
     const toPos = this.toPos;
 
     const parent = fromPos.parent;
     const result = [];
-    let pos = fromPos.pos + 1;
-    console.log(`nodes for BlockRangeSelection from=${fromPos.nodeAfter} to=${toPos.nodeAfter}`);
-    console.log(`parents: ${fromPos.parent}==${toPos.parent}, index=${fromPos.index()}..${toPos.index()}`);
+    let pos = fromPos.pos;
     for(let i = fromPos.index(); i <= toPos.index(); i++) {
       const node = parent.child(i);
-      dumpNodeShallow(node);
       result.push(unresolvedNode(node, fromPos.doc, pos));
       pos += node.nodeSize;
     }
@@ -112,11 +113,7 @@ export class BlockRangeSelection extends BlockSelection {
   override map(doc: Node, mapping: Mapping): Selection {
     const anchor = doc.resolve(mapping.map(this.anchorPos.pos));
     const head = doc.resolve(mapping.map(this.headPos.pos));
-    if(anchor.pos === head.pos) {
-      return Selection.near(anchor);
-    } else {
-      return new BlockRangeSelection(anchor, head);
-    }
+    return new BlockRangeSelection(anchor, head);
   }
 
   override content(): Slice {
@@ -135,7 +132,7 @@ export class BlockRangeSelection extends BlockSelection {
 }
 
 export class MultipleBlockSelection extends BlockSelection {
-  private _nodes: ResolvedNode[];
+  protected _nodes: ResolvedNode[];
 
   constructor(nodes: ResolvedPos[]) {
     if(nodes.length === 0) throw new Error("expected at least one node");
@@ -164,18 +161,14 @@ export class MultipleBlockSelection extends BlockSelection {
   override get anchorNode() { return this._nodes[0]; }
   override get headNode() { return this._nodes[this._nodes.length - 1]; }
 
-  override nodes(): ResolvedNode[] {
+  override calculateNodes(): ResolvedNode[] {
     return this._nodes;
   }
 
   override map(doc: Node, mapping: Mapping): Selection {
     const anchor = doc.resolve(mapping.map(this.anchorPos.pos));
     const head = doc.resolve(mapping.map(this.headPos.pos));
-    if(anchor.pos === head.pos) {
-      return Selection.near(anchor);
-    } else { // TODO
-      return new BlockRangeSelection(anchor, head);
-    }
+    return new BlockRangeSelection(anchor, head);
   }
 
   override content(): Slice {

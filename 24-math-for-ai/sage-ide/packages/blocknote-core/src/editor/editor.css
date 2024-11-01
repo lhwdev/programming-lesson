@@ -1,4 +1,5 @@
 @import url("prosemirror-tables/style/tables.css");
+@import url("../extensions/SideMenu/dropCursorStyle.css");
 
 .bn-editor {
   outline: none;

@@ -1,5 +1,5 @@
 import { Node } from "@tiptap/core";
-import { Fragment, Node as PMNode, Slice } from "prosemirror-model";
+import { Fragment, NodeType, Node as PMNode, Schema, Slice } from "prosemirror-model";
 import { NodeSelection, TextSelection } from "prosemirror-state";
 
 import { getBlockInfoFromPos } from "../api/getBlockInfoFromPos";
@@ -101,7 +101,7 @@ export const BlockContainer = Node.create<{
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }) {
     const blockOuter = document.createElement("div");
     blockOuter.className = "bn-block-outer";
     blockOuter.setAttribute("data-node-type", "blockOuter");
@@ -118,7 +118,6 @@ export const BlockContainer = Node.create<{
     const block = document.createElement("div");
     block.className = mergeCSSClasses("bn-block", blockHTMLAttributes.class);
     block.setAttribute("data-node-type", this.name);
-    block.setAttribute("data-block-selected", node.attrs.selected ? "true" : "false");
     for(const [attribute, value] of Object.entries(blockHTMLAttributes)) {
       if(attribute !== "class") {
         block.setAttribute(attribute, value);
@@ -201,11 +200,8 @@ export const BlockContainer = Node.create<{
                     new Slice(Fragment.from(childNodes), 0, 0),
                   );
                 } else {
-                // Inserts a new blockGroup containing the child nodes created earlier.
-                  state.tr.insert(
-                    startPos + contentNode.nodeSize,
-                    state.schema.nodes["blockGroup"].create({}, childNodes),
-                  );
+                  // Inserts a new blockGroup containing the child nodes created earlier.
+                  state.tr.insert(startPos + contentNode.nodeSize, createBlockGroup(state.schema, contentNode.type, childNodes));
                 }
               }
 
@@ -731,3 +727,12 @@ export const BlockContainer = Node.create<{
     };
   },
 });
+
+type Content = Fragment | PMNode[] | readonly PMNode[];
+
+export function createBlockGroup(schema: Schema, contentNodeType: NodeType, children: Content) {
+  const createBlock: (state: Schema, children: Content) => PMNode = contentNodeType.spec.createBlockGroup
+    ?? ((schema, children) => schema.nodes.blockGroup.create({}, children));
+
+  return createBlock(schema, children);
+}

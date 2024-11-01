@@ -111,8 +111,8 @@
 }
 
 /* Indent line styling */
-.bn-block-group
-  .bn-block-group
+.bn-nest-block-group
+  .bn-nest-block-group
   .bn-block-outer:not([data-prev-depth-changed])::before {
   border-left: 1px solid var(--bn-colors-side-menu);
 }

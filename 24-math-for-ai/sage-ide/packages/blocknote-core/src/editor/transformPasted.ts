@@ -1,5 +1,6 @@
 import { Fragment, Slice } from "@tiptap/pm/model";
 import { EditorView } from "@tiptap/pm/view";
+import { isNestBlockGroup } from "../pm-nodes/BlockGroup";
 
 // helper function to remove a child from a fragment
 function removeChild(node: Fragment, n: number) {
@@ -29,10 +30,7 @@ export function transformPasted(slice: Slice, view: EditorView) {
 
       // when there is a blockGroup with lists, it should be nested in the new blockcontainer
       // (if we remove this if-block, the nesting bug will be fixed, but lists won't be nested correctly)
-      if(
-        i + 1 < f.childCount
-        && f.child(i + 1).type.spec.group === "blockGroup"
-      ) {
+      if(i + 1 < f.childCount && isNestBlockGroup(f.child(i + 1).type)) {
         const nestedChild = f
           .child(i + 1)
           .child(0)
@@ -48,7 +46,7 @@ export function transformPasted(slice: Slice, view: EditorView) {
         }
       }
       const container = view.state.schema.nodes.blockContainer.create(
-        undefined,
+        null,
         content,
       );
       f = f.replaceChild(i, container);

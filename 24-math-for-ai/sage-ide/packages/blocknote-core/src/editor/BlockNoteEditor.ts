@@ -375,7 +375,7 @@ export class BlockNoteEditor<
         return [
           this.formattingToolbar.plugin,
           this.linkToolbar.plugin,
-          this.sideMenu.plugin,
+          ...this.sideMenu.plugins,
           this.suggestionMenus.plugin,
           ...(this.filePanel ? [this.filePanel.plugin] : []),
           ...(this.tableHandles ? [this.tableHandles.plugin] : []),

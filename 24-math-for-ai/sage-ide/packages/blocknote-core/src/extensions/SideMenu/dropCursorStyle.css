@@ -1,0 +1,25 @@
+.bn-drop-cursor {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none;
+
+  width: 100%;
+  height: 4px;
+
+  display: flex;
+}
+
+/* width: 26px for :not(:last-child) */
+/* This width value is precisely calculated; See DropCursorPlugin.ts and Block.css */
+.bn-drop-cursor-bar {
+  margin-inline: 2px;
+  background-color: #59a6ff;
+  opacity: 40%;
+}
+
+.bn-drop-cursor-bar:not(:last-child) {
+  width: 22px;
+}
+.bn-drop-cursor-bar:last-child {
+  flex: 1;
+}

@@ -12,6 +12,7 @@ import {
 } from "../../schema";
 import { blockToNode, nodeToBlock } from "../nodeConversions/nodeConversions";
 import { getNodeById } from "../nodeUtil";
+import { createBlockGroup } from "../../pm-nodes/BlockContainer";
 
 export function insertBlocks<
   BSchema extends BlockSchema,
@@ -56,9 +57,7 @@ export function insertBlocks<
   if(placement === "nested") {
     // Case if block doesn't already have children.
     if(node.childCount < 2) {
-      const blockGroupNode = editor._tiptapEditor.state.schema.nodes[
-        "blockGroup"
-      ].create({}, nodesToInsert);
+      const blockGroupNode = createBlockGroup(editor._tiptapEditor.state.schema, node.firstChild!.type, nodesToInsert);
 
       editor.dispatch(
         editor._tiptapEditor.state.tr.insert(

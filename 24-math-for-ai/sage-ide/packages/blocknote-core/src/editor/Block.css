@@ -4,27 +4,29 @@ BASIC STYLES
 
 .bn-block-outer {
   line-height: 1.5;
-  transition: margin 0.2s;
+  transition: margin-left 0.2s;
+  margin-block: 2px;
 }
 
 /*Ensures blocks & block content spans editor width*/
 .bn-block {
   display: flex;
   flex-direction: column;
+  transition: background-color 0.12s;
 }
 
-.bn-block[data-block-selected="true"] {
+.bn-block-outer.selected > .bn-block {
   border-radius: 4px;
-  outline: 4px solid rgb(100, 160, 255);
+  background-color: rgba(100, 160, 255, 0.24);
 }
 
-.bn-block[data-block-selected="true"] ::selection {
+.bn-block-outer.selected > .bn-block ::selection {
   background-color: transparent;
 }
 
 .bn-block-content {
   display: flex;
-  padding: 3px 0;
+  padding: 2px 2px;
   transition: font-size 0.2s;
   width: 100%;
   /*
@@ -50,16 +52,16 @@ BASIC STYLES
 NESTED BLOCKS
 */
 
-.bn-block-group .bn-block-group {
+.bn-nest-block-group .bn-nest-block-group {
   margin-left: 1.5em;
 }
 
-.bn-block-group .bn-block-group > .bn-block-outer {
+.bn-nest-block-group .bn-nest-block-group > .bn-block-outer {
   position: relative;
 }
 
-.bn-block-group
-  .bn-block-group
+.bn-nest-block-group
+  .bn-nest-block-group
   > .bn-block-outer:not([data-prev-depth-changed])::before {
   content: " ";
   display: inline;
@@ -69,8 +71,8 @@ NESTED BLOCKS
   transition: all 0.2s 0.1s;
 }
 
-.bn-block-group
-  .bn-block-group
+.bn-nest-block-group
+  .bn-nest-block-group
   > .bn-block-outer[data-prev-depth-change="-2"]::before {
   height: 0;
 }
@@ -162,12 +164,16 @@ NESTED BLOCKS
   content: "";
 }
 
-/* Ordered */
-.bn-block-content[data-content-type="numberedListItem"] {
+.bn-generic-list-item {
   display: flex;
-  gap: 0.5em;
+  gap: 2px;
+}
+.bn-generic-list-item::before {
+  width: 24px;
+  text-align: center;
 }
 
+/* Ordered */
 [data-content-type="numberedListItem"] {
   --index: attr(data-index);
 }
@@ -189,10 +195,6 @@ NESTED BLOCKS
 }
 
 /* Unordered */
-.bn-block-content[data-content-type="bulletListItem"] {
-  display: flex;
-  gap: 0.5em;
-}
 
 /* Checked */
 .bn-block-content[data-content-type="checkListItem"] > div {
@@ -201,7 +203,6 @@ NESTED BLOCKS
 
 .bn-block-content[data-content-type="checkListItem"] > div > div > input {
   margin: 0;
-  margin-inline-end: 0.5em;
   cursor: pointer;
 }
 
@@ -232,7 +233,7 @@ NESTED BLOCKS
 
 /* 1 level of list nesting */
 [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   > .bn-block-outer[data-prev-type="bulletListItem"]
   > .bn-block
   > .bn-block-content::before {
@@ -240,7 +241,7 @@ NESTED BLOCKS
 }
 
 [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   > .bn-block-outer:not([data-prev-type])
   > .bn-block
   > .bn-block-content[data-content-type="bulletListItem"]::before {
@@ -249,9 +250,9 @@ NESTED BLOCKS
 
 /* 2 levels of list nesting */
 [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   > .bn-block-outer[data-prev-type="bulletListItem"]
   > .bn-block
   > .bn-block-content::before {
@@ -259,9 +260,9 @@ NESTED BLOCKS
 }
 
 [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   [data-content-type="bulletListItem"]
-  ~ .bn-block-group
+  ~ .bn-nest-block-group
   > .bn-block-outer:not([data-prev-type])
   > .bn-block
   > .bn-block-content[data-content-type="bulletListItem"]::before {

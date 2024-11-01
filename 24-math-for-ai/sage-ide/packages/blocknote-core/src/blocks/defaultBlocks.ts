@@ -30,6 +30,7 @@ import { FileBlock } from "./FileBlockContent/FileBlockContent";
 import { ImageBlock } from "./ImageBlockContent/ImageBlockContent";
 import { VideoBlock } from "./VideoBlockContent/VideoBlockContent";
 import { AudioBlock } from "./AudioBlockContent/AudioBlockContent";
+import { BlockColumn } from "./BlockColumnContent/BlockColumnContent";
 
 export const defaultBlockSpecs = {
   paragraph: Paragraph,
@@ -42,6 +43,7 @@ export const defaultBlockSpecs = {
   image: ImageBlock,
   video: VideoBlock,
   audio: AudioBlock,
+  blockColumn: BlockColumn,
 } satisfies BlockSpecs;
 
 export const defaultBlockSchema = getBlockSchemaFromSpecs(defaultBlockSpecs);

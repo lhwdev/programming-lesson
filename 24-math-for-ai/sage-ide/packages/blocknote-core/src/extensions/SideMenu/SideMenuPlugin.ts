@@ -13,7 +13,8 @@ import { UiElementPosition } from "../../extensions-shared/UiElementPosition";
 import { BlockSchema, InlineContentSchema, StyleSchema } from "../../schema";
 import { EventEmitter } from "../../util/EventEmitter";
 import { initializeESMDependencies } from "../../util/esmDependencies";
-import { MultipleNodeSelection } from "./MultipleNodeSelection";
+import { BlockRangeSelection, isBlockSelection } from "../../util/BlockSelection";
+import { dropCursor } from "./DropCursorPlugin";
 
 let dragImageElement: Element | undefined;
 
@@ -209,13 +210,13 @@ function dragStart<
     const { from, to } = blockPositionsFromSelection(selection, doc);
 
     const draggedBlockInSelection = from <= pos && pos < to;
-    const multipleBlocksSelected
+    const isBlockSelected
       = selection.$anchor.node() !== selection.$head.node()
-      || selection instanceof MultipleNodeSelection;
+      || isBlockSelection(selection);
 
-    if(draggedBlockInSelection && multipleBlocksSelected) {
+    if(draggedBlockInSelection && isBlockSelected) {
       view.dispatch(
-        view.state.tr.setSelection(MultipleNodeSelection.create(doc, from, to)),
+        view.state.tr.setSelection(BlockRangeSelection.createFromEndpoint(doc.resolve(from), doc.resolve(to))),
       );
       setDragImage(view, from, to);
     } else {
@@ -689,11 +690,11 @@ export class SideMenuProsemirrorPlugin<
   S extends StyleSchema,
 > extends EventEmitter<any> {
   public view: SideMenuView<BSchema, I, S> | undefined;
-  public readonly plugin: Plugin;
+  public readonly plugins: Plugin[];
 
   constructor(private readonly editor: BlockNoteEditor<BSchema, I, S>) {
     super();
-    this.plugin = new Plugin({
+    const sideMenuPlugin = new Plugin({
       key: sideMenuPluginKey,
       view: (editorView) => {
         this.view = new SideMenuView(editor, editorView, (state) => {
@@ -702,6 +703,8 @@ export class SideMenuProsemirrorPlugin<
         return this.view;
       },
     });
+    const dropCursorPlugin = dropCursor({ classes: { root: "bn-drop-cursor", bar: "bn-drop-cursor-bar" } });
+    this.plugins = [sideMenuPlugin, dropCursorPlugin];
   }
 
   public onUpdate(callback: (state: SideMenuState<BSchema, I, S>) => void) {

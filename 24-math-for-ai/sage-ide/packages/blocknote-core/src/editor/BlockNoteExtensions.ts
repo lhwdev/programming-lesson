@@ -4,7 +4,6 @@ import type { BlockNoteEditor } from "./BlockNoteEditor";
 
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
-import { Dropcursor } from "@tiptap/extension-dropcursor";
 import { Gapcursor } from "@tiptap/extension-gapcursor";
 import { HardBreak } from "@tiptap/extension-hard-break";
 import { History } from "@tiptap/extension-history";
@@ -29,10 +28,8 @@ import {
   StyleSchema,
   StyleSpecs,
 } from "../schema";
-import { Plugin } from "prosemirror-state";
-import { ResolvedPos } from "prosemirror-model";
-import { BlockRangeSelection } from "../util/BlockSelection";
 import { BlockBehaviorExtension } from "../extensions/Block/BlockBehaviorExtension";
+import { ColumnBlockGroup } from "../blocks/BlockColumnContent/BlockColumnContent";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -71,7 +68,6 @@ export const getBlockNoteExtensions = <
     // DevTools,
     Gapcursor,
 
-    // DropCursor,
     UniqueID.configure({
       types: ["blockContainer"],
       setIdAttribute: opts.setIdAttribute,
@@ -129,6 +125,7 @@ export const getBlockNoteExtensions = <
     BlockGroup.configure({
       domAttributes: opts.domAttributes,
     }),
+    ColumnBlockGroup.configure({}),
     ...Object.values(opts.inlineContentSpecs)
       .filter((a) => a.config !== "link" && a.config !== "text")
       .map((inlineContentSpec) => {
@@ -157,7 +154,7 @@ export const getBlockNoteExtensions = <
     createPasteFromClipboardExtension(opts.editor),
     createDropFileExtension(opts.editor),
 
-    Dropcursor.configure({ width: 5, color: "#ddeeff" }),
+    // Dropcursor.configure({ width: 5, color: "#ddeeff" }),
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),
     // should be handled before Enter handlers in other components like splitListItem
     ...(opts.trailingBlock === undefined || opts.trailingBlock

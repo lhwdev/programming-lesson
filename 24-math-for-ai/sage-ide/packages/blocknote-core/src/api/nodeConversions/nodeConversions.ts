@@ -26,6 +26,7 @@ import {
   isStyledTextInlineContent,
 } from "../../schema/inlineContent/types";
 import { UnreachableCaseError } from "../../util/typescript";
+import { createBlockGroup } from "../../pm-nodes/BlockContainer";
 
 /**
  * Convert a StyledText inline element to a
@@ -253,7 +254,7 @@ export function blockToNode(
     }
   }
 
-  const groupNode = schema.nodes["blockGroup"].create({}, children);
+  const groupNode = createBlockGroup(schema, contentNode.type, children);
 
   return schema.nodes["blockContainer"].create(
     {

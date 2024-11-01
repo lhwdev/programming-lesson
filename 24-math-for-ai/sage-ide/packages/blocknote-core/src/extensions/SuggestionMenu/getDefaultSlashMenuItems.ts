@@ -23,7 +23,7 @@ function setSelectionToNextContentEditableBlock<
   let block = editor.getTextCursorPosition().block;
   let contentType = editor.schema.blockSchema[block.type].content;
 
-  while (contentType === "none") {
+  while(contentType === "none") {
     block = editor.getTextCursorPosition().nextBlock!;
     contentType = editor.schema.blockSchema[block.type].content as
     | "inline"
@@ -268,6 +268,21 @@ export function getDefaultSlashMenuItems<
       },
       key: "image",
       ...editor.dictionary.slash_menu.file,
+    });
+  }
+
+  if(checkDefaultBlockTypeInSchema("blockColumn", editor)) {
+    items.push({
+      onItemClick: () => {
+        insertOrUpdateBlock(editor, {
+          type: "blockColumn",
+        });
+      },
+      key: "block_column",
+      title: "가로 열",
+      subtext: "내용을 가로로 나눕니다.",
+      aliases: ["column", "가로", "열"],
+      group: "기타",
     });
   }
 
