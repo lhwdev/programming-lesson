@@ -5,6 +5,7 @@ import * as Y from "yjs";
 import {
   insertBlocks,
   insertContentAt,
+  nearestBlockContainer,
   removeBlocks,
   replaceBlocks,
   updateBlock,
@@ -70,6 +71,8 @@ import { createInternalHTMLSerializer } from "../api/exporters/html/internalHTML
 import { PreviousBlockTypePlugin } from "../extensions/PreviousBlockType/PreviousBlockTypePlugin";
 import "../style.css";
 import { initializeESMDependencies } from "../util/esmDependencies";
+import { getRootGroup } from "../pm-nodes/Doc";
+import { getBlockExtra } from "../pm-nodes/BlockContainer";
 
 export type BlockNoteEditorOptions<
   BSchema extends BlockSchema,
@@ -543,7 +546,7 @@ export class BlockNoteEditor<
   public get document(): Block<BSchema, ISchema, SSchema>[] {
     const blocks: Block<BSchema, ISchema, SSchema>[] = [];
 
-    this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
+    getRootGroup(this._tiptapEditor.state.doc).descendants((node) => {
       blocks.push(
         nodeToBlock(
           node,
@@ -574,7 +577,7 @@ export class BlockNoteEditor<
         : blockIdentifier.id;
     let newBlock: Block<BSchema, ISchema, SSchema> | undefined = undefined;
 
-    this._tiptapEditor.state.doc.firstChild!.descendants((node, pos) => {
+    getRootGroup(this._tiptapEditor.state.doc).descendants((node, pos) => {
       if(typeof newBlock !== "undefined") {
         return false;
       }
@@ -652,6 +655,18 @@ export class BlockNoteEditor<
     this._tiptapEditor.on("selectionUpdate", callback);
   }
 
+  public isInsideBlock(pos?: number): boolean {
+    const state = this._tiptapEditor.state;
+    let $pos;
+    if(pos) {
+      $pos = state.doc.resolve(pos);
+    } else {
+      $pos = state.selection.$from;
+    }
+    const container = nearestBlockContainer($pos);
+    return container != null && !!getBlockExtra(container).isBlock;
+  }
+
   /**
    * Gets a snapshot of the current text cursor position.
    * @returns A snapshot of the current text cursor position.
@@ -660,11 +675,14 @@ export class BlockNoteEditor<
     BSchema,
     ISchema,
     SSchema
-  > {
-    const { node, depth, startPos, endPos } = getBlockInfoFromPos(
+  > | null {
+    const blockInfo = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
       this._tiptapEditor.state.selection.from,
-    )!;
+    );
+    if(!blockInfo) return null;
+
+    const { node, depth, startPos, endPos } = blockInfo;
 
     // Index of the current blockContainer node relative to its parent blockGroup.
     const nodeIndex = this._tiptapEditor.state.doc
@@ -1050,10 +1068,13 @@ export class BlockNoteEditor<
    * Checks if the block containing the text cursor can be nested.
    */
   public canNestBlock() {
-    const { startPos, depth } = getBlockInfoFromPos(
+    const blockInfo = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
       this._tiptapEditor.state.selection.from,
-    )!;
+    );
+    if(!blockInfo) return false;
+
+    const { startPos, depth } = blockInfo;
 
     return this._tiptapEditor.state.doc.resolve(startPos).index(depth - 1) > 0;
   }
@@ -1069,10 +1090,13 @@ export class BlockNoteEditor<
    * Checks if the block containing the text cursor is nested.
    */
   public canUnnestBlock() {
-    const { depth } = getBlockInfoFromPos(
+    const blockInfo = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
       this._tiptapEditor.state.selection.from,
-    )!;
+    );
+    if(!blockInfo) return;
+
+    const { depth } = blockInfo;
 
     return depth > 2;
   }

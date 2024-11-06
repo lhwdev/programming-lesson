@@ -1,4 +1,5 @@
 import { Node } from "prosemirror-model";
+import { getRootGroup } from "../pm-nodes/Doc";
 
 /**
  * Get a TipTap node by id
@@ -10,7 +11,7 @@ export function getNodeById(
   let targetNode: Node | undefined = undefined;
   let posBeforeNode: number | undefined = undefined;
 
-  doc.firstChild!.descendants((node, pos) => {
+  getRootGroup(doc).descendants((node, pos) => {
     // Skips traversing nodes after node with target ID has been found.
     if(targetNode) {
       return false;

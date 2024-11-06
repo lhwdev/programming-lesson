@@ -1,5 +1,5 @@
-import { Node } from "@tiptap/core";
-import { Fragment, NodeType, Node as PMNode, Schema, Slice } from "prosemirror-model";
+import { Extension, Node } from "@tiptap/core";
+import { Fragment, NodeType, Node as PMNode, ResolvedPos, Schema, Slice } from "prosemirror-model";
 import { NodeSelection, TextSelection } from "prosemirror-state";
 
 import { getBlockInfoFromPos } from "../api/getBlockInfoFromPos";
@@ -101,7 +101,7 @@ export const BlockContainer = Node.create<{
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
     const blockOuter = document.createElement("div");
     blockOuter.className = "bn-block-outer";
     blockOuter.setAttribute("data-node-type", "blockOuter");
@@ -152,7 +152,7 @@ export const BlockContainer = Node.create<{
         (posInBlock) =>
           ({ state, dispatch }) => {
             const blockInfo = getBlockInfoFromPos(state.doc, posInBlock);
-            if(blockInfo === undefined) {
+            if(!blockInfo) {
               return false;
             }
 
@@ -169,26 +169,32 @@ export const BlockContainer = Node.create<{
         (posInBlock, block) =>
           ({ state, dispatch }) => {
             const blockInfo = getBlockInfoFromPos(state.doc, posInBlock);
-            if(blockInfo === undefined) {
+            if(!blockInfo) {
               return false;
             }
 
             const { startPos, endPos, node, contentNode } = blockInfo;
+            const blockConfig = this.options.editor.schema.blockSpecs[contentNode.type.name].config;
 
             if(dispatch) {
             // Adds blockGroup node with child blocks if necessary.
-              if(block.children !== undefined) {
+
+              if(block.children !== undefined || blockConfig.blockContent) {
                 const childNodes = [];
 
                 // Creates ProseMirror nodes for each child block, including their descendants.
-                for(const child of block.children) {
-                  childNodes.push(
-                    blockToNode(
-                      child,
-                      state.schema,
-                      this.options.editor.schema.styleSchema,
-                    ),
-                  );
+                if(block.children) {
+                  for(const child of block.children) {
+                    childNodes.push(
+                      blockToNode(
+                        child,
+                        state.schema,
+                        this.options.editor.schema.styleSchema,
+                      ),
+                    );
+                  }
+                } else {
+                  childNodes.push(state.schema.nodes.paragraph.create());
                 }
 
                 // Checks if a blockGroup node already exists.
@@ -352,9 +358,9 @@ export const BlockContainer = Node.create<{
             const nextBlockInfo = getBlockInfoFromPos(
               state.doc,
               posBetweenBlocks + 1,
-            );
+            )!;
 
-            const { node, contentNode, startPos, endPos, depth } = nextBlockInfo!;
+            const { node, contentNode, startPos, endPos, depth } = nextBlockInfo;
 
             // Removes a level of nesting all children of the next block by 1 level, if it contains both content and block
             // group nodes.
@@ -379,7 +385,7 @@ export const BlockContainer = Node.create<{
             while(prevBlockInfo!.numChildBlocks > 0) {
               prevBlockEndPos--;
               prevBlockInfo = getBlockInfoFromPos(state.doc, prevBlockEndPos);
-              if(prevBlockInfo === undefined) {
+              if(!prevBlockInfo) {
                 return false;
               }
             }
@@ -415,12 +421,11 @@ export const BlockContainer = Node.create<{
         (posInBlock, keepType, keepProps) =>
           ({ state, dispatch }) => {
             const blockInfo = getBlockInfoFromPos(state.doc, posInBlock);
-            if(blockInfo === undefined) {
+            if(!blockInfo) {
               return false;
             }
 
-            const { contentNode, contentType, startPos, endPos, depth }
-            = blockInfo;
+            const { contentNode, contentType, startPos, endPos, depth } = blockInfo;
 
             const originalBlockContent = state.doc.cut(startPos + 1, posInBlock);
             const newBlockContent = state.doc.cut(posInBlock, endPos - 1);
@@ -488,6 +493,18 @@ export const BlockContainer = Node.create<{
     };
   },
 
+  addExtensions() {
+    const PreserveBlockExtraSpec = Extension.create({
+      name: "PreserveBlockExtraSpec",
+      extendNodeSchema(extension) {
+        const extra = extension.config.blockExtra;
+        if(extra) return { blockExtra: extra };
+        return {};
+      },
+    });
+    return [PreserveBlockExtraSpec];
+  },
+
   addProseMirrorPlugins() {
     return [NonEditableBlockPlugin()];
   },
@@ -503,10 +520,12 @@ export const BlockContainer = Node.create<{
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
           commands.command(({ state }) => {
-            const { contentType, startPos } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { contentType, startPos } = blockInfo;
 
             const selectionAtBlockStart = state.selection.from === startPos + 1;
             const isParagraph = contentType.name === "paragraph";
@@ -523,10 +542,12 @@ export const BlockContainer = Node.create<{
         // Removes a level of nesting if the block is indented if the selection is at the start of the block.
         () =>
           commands.command(({ state }) => {
-            const { startPos } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { startPos } = blockInfo;
 
             const selectionAtBlockStart = state.selection.from === startPos + 1;
 
@@ -540,10 +561,12 @@ export const BlockContainer = Node.create<{
         // is at the start of the block.
         () =>
           commands.command(({ state }) => {
-            const { depth, startPos } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { depth, startPos } = blockInfo;
 
             const selectionAtBlockStart = state.selection.from === startPos + 1;
             const selectionEmpty = state.selection.empty;
@@ -573,10 +596,12 @@ export const BlockContainer = Node.create<{
         // end of the block.
         () =>
           commands.command(({ state }) => {
-            const { node, depth, endPos } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { node, depth, endPos } = blockInfo;
 
             const blockAtDocEnd = endPos === state.doc.nodeSize - 4;
             const selectionAtBlockEnd = state.selection.from === endPos - 1;
@@ -612,10 +637,12 @@ export const BlockContainer = Node.create<{
         // of the block.
         () =>
           commands.command(({ state }) => {
-            const { contentNode, depth } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { contentNode, depth } = blockInfo;
 
             const selectionAtBlockStart
               = state.selection.$anchor.parentOffset === 0;
@@ -639,10 +666,12 @@ export const BlockContainer = Node.create<{
         // empty & at the start of the block.
         () =>
           commands.command(({ state, chain }) => {
-            const { contentNode, endPos } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { contentNode, endPos } = blockInfo;
 
             const selectionAtBlockStart
               = state.selection.$anchor.parentOffset === 0;
@@ -668,10 +697,12 @@ export const BlockContainer = Node.create<{
         // deletes the selection beforehand, if it's not empty.
         () =>
           commands.command(({ state, chain }) => {
-            const { contentNode } = getBlockInfoFromPos(
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
-            )!;
+            );
+            if(!blockInfo) return false;
+            const { contentNode } = blockInfo;
 
             const selectionAtBlockStart
               = state.selection.$anchor.parentOffset === 0;
@@ -730,9 +761,66 @@ export const BlockContainer = Node.create<{
 
 type Content = Fragment | PMNode[] | readonly PMNode[];
 
+export interface BlockExtra {
+  isBlock?: boolean;
+  createBlockGroup?(schema: Schema, children: Fragment): PMNode;
+
+  alien?: boolean;
+  ignoreStyles?: boolean;
+  placeholder?: string;
+}
+
+export function getBlockExtra(contentNodeType: NodeType): BlockExtra;
+export function getBlockExtra(blockContainerNode: PMNode): BlockExtra;
+export function getBlockExtra(pos: ResolvedPos): BlockExtra | null;
+
+export function getBlockExtra(input: PMNode | NodeType | ResolvedPos): BlockExtra | null {
+  const extra = (contentNodeType: NodeType, isBlock = true) => {
+    const result = (contentNodeType.spec.blockExtra ?? {}) as BlockExtra;
+    if(result.isBlock === undefined) result.isBlock = isBlock;
+    return result;
+  };
+  if(input instanceof PMNode) {
+    return extra(input.firstChild!.type);
+  } else if(input instanceof ResolvedPos) {
+    const blockContainer = input.doc.type.schema.nodes.blockContainer;
+    for(let depth = input.depth; depth >= 0; depth--) {
+      const node = input.node(depth);
+      if(node.type === blockContainer) return extra(node.firstChild!.type);
+      if("blockExtra" in node.type.spec) return extra(node.type, false);
+    }
+    return null;
+  } else {
+    return extra(input);
+  }
+}
+
+/*
+export function getBlockExtra($pos: ResolvedPos): BlockExtra | null {
+  const result: BlockExtra = {};
+  const blockContainer = $pos.doc.type.schema.nodes.blockContainer;
+
+  const addContainer = (node: PMNode) => {
+    const extra = node.type.spec.blockExtra as BlockExtra | undefined | null;
+    if(extra) {
+      for(const [key, value] of Object.entries(extra)) {
+        result[key as keyof BlockExtra] = value;
+      }
+    }
+  };
+
+  for(let depth = 0; depth <= $pos.depth; depth++) {
+    const node = $pos.node(depth);
+    if(node.type === blockContainer) {
+      addContainer(node);
+    }
+  }
+}
+*/
+
 export function createBlockGroup(schema: Schema, contentNodeType: NodeType, children: Content) {
-  const createBlock: (state: Schema, children: Content) => PMNode = contentNodeType.spec.createBlockGroup
+  const createBlock: (state: Schema, children: Fragment) => PMNode = getBlockExtra(contentNodeType).createBlockGroup
     ?? ((schema, children) => schema.nodes.blockGroup.create({}, children));
 
-  return createBlock(schema, children);
+  return createBlock(schema, Fragment.from(children));
 }

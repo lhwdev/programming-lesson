@@ -8,7 +8,7 @@ export const getCurrentBlockContentType = (editor: Editor) => {
   const { contentType } = getBlockInfoFromPos(
     editor.state.doc,
     editor.state.selection.from,
-  );
+  )!;
 
   return contentType.spec.content;
 };

@@ -198,6 +198,7 @@ export type ComponentProps = {
         autoFocus?: boolean;
         placeholder: string;
         value: string;
+        rightSection?: "submit" | "delete";
         onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
         onChange: (event: ChangeEvent<HTMLInputElement>) => void;
         onSubmit?: () => void;

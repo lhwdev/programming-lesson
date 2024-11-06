@@ -49,6 +49,7 @@ export async function handleFileInsertion<
   if(!editor.uploadFile) {
     return;
   }
+  if(!editor.isInsideBlock()) return;
 
   const dataTransfer
     = "dataTransfer" in event ? event.dataTransfer : event.clipboardData;
@@ -118,7 +119,7 @@ export async function handleFileInsertion<
       if(event.type === "paste") {
         insertedBlockId = editor.insertBlocks(
           [fileBlock],
-          editor.getTextCursorPosition().block,
+          editor.getTextCursorPosition()!.block,
           "after",
         )[0].id;
       } else if(event.type === "drop") {
@@ -135,7 +136,7 @@ export async function handleFileInsertion<
         const blockInfo = getBlockInfoFromPos(
           editor._tiptapEditor.state.doc,
           pos.pos,
-        );
+        )!;
 
         insertedBlockId = editor.insertBlocks(
           [fileBlock],

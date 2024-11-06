@@ -1,6 +1,7 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { BlockNoteEditor } from "../../editor/BlockNoteEditor";
+import { getBlockExtra } from "../../pm-nodes/BlockContainer";
 
 const PLUGIN_KEY = new PluginKey(`blocknote-placeholder`);
 
@@ -36,20 +37,19 @@ export const PlaceholderPlugin = (
           : ``;
 
         if(blockType === "default") {
-          return getBaseSelector(mustBeFocusedSelector);
+          return mustBeFocusedSelector;
         }
 
         const blockTypeSelector = `[data-content-type="${blockType}"]`;
-        return getBaseSelector(mustBeFocusedSelector + blockTypeSelector);
+        return mustBeFocusedSelector + blockTypeSelector;
       };
 
       for(const [blockType, placeholder] of Object.entries(placeholders)) {
         const mustBeFocused = blockType === "default";
+        const additional = getSelector(blockType, mustBeFocused);
 
         styleSheet.insertRule(
-          `${getSelector(blockType, mustBeFocused)}{ content: ${JSON.stringify(
-            placeholder,
-          )}; }`,
+          `${getBaseSelector(additional)}{ content: var(--bn-placeholder, ${JSON.stringify(placeholder)}); }`,
         );
 
         // For some reason, the placeholders which show when the block is focused
@@ -95,10 +95,14 @@ export const PlaceholderPlugin = (
           return null;
         }
 
+        const blockExtra = getBlockExtra($pos);
+        if(!blockExtra || blockExtra.alien || (!blockExtra.isBlock && !blockExtra.placeholder)) return null;
+
         const before = $pos.before();
 
         const dec = Decoration.node(before, before + node.nodeSize, {
           "data-is-empty-and-focused": "true",
+          "style": blockExtra.placeholder && `--bn-placeholder: ${JSON.stringify(blockExtra.placeholder)};`,
         });
 
         return DecorationSet.create(doc, [dec]);

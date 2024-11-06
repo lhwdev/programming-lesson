@@ -6,6 +6,7 @@ import type { BlockNoteEditor } from "../../editor/BlockNoteEditor";
 import { UiElementPosition } from "../../extensions-shared/UiElementPosition";
 import { BlockSchema, InlineContentSchema, StyleSchema } from "../../schema";
 import { EventEmitter } from "../../util/EventEmitter";
+import { BlockExtra, getBlockExtra } from "../../pm-nodes/BlockContainer";
 
 const findBlock = findParentNode((node) => node.type.name === "blockContainer");
 
@@ -141,6 +142,7 @@ type SuggestionPluginState =
     triggerCharacter: string;
     deleteTriggerCharacter: boolean;
     queryStartPos: number;
+    queryPosExtra: BlockExtra;
     query: string;
     decorationId: string;
     ignoreQueryLength?: boolean;
@@ -198,6 +200,10 @@ export class SuggestionMenuProseMirrorPlugin<
             return prev;
           }
 
+          const selection = newState.selection;
+          const extra = getBlockExtra(selection.$from);
+          if(!extra || extra.alien) return undefined;
+
           // Either contains the trigger character if the menu should be shown,
           // or null if it should be hidden.
           const suggestionPluginTransactionMeta: {
@@ -218,7 +224,8 @@ export class SuggestionMenuProseMirrorPlugin<
               deleteTriggerCharacter:
                 suggestionPluginTransactionMeta.deleteTriggerCharacter
                 !== false,
-              queryStartPos: newState.selection.from,
+              queryStartPos: selection.from,
+              queryPosExtra: extra,
               query: "",
               decorationId: `id_${Math.floor(Math.random() * 0xffffffff)}`,
               ignoreQueryLength:
@@ -234,7 +241,7 @@ export class SuggestionMenuProseMirrorPlugin<
           // Checks if the menu should be hidden.
           if(
             // Highlighting text should hide the menu.
-            newState.selection.from !== newState.selection.to
+            selection.from !== selection.to
             // Transactions with plugin metadata should hide the menu.
             || suggestionPluginTransactionMeta === null
             // Certain mouse events should hide the menu.
@@ -244,7 +251,7 @@ export class SuggestionMenuProseMirrorPlugin<
             || transaction.getMeta("pointer")
             // Moving the caret before the character which triggered the menu should hide it.
             || (prev.triggerCharacter !== undefined
-              && newState.selection.from < prev.queryStartPos!)
+              && selection.from < prev.queryStartPos!)
           ) {
             return undefined;
           }
@@ -254,7 +261,7 @@ export class SuggestionMenuProseMirrorPlugin<
           // Updates the current query.
           next.query = newState.doc.textBetween(
             prev.queryStartPos!,
-            newState.selection.from,
+            selection.from,
           );
 
           return next;

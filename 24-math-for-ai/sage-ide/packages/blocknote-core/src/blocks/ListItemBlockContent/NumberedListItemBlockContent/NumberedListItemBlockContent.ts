@@ -146,6 +146,7 @@ const NumberedListItemBlockContent = createStronglyTypedTiptapNode({
       {
         ...(this.options.domAttributes?.blockContent || {}),
         ...HTMLAttributes,
+        class: "bn-generic-list-item",
       },
       this.options.domAttributes?.inlineContent || {},
     );

@@ -9,10 +9,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useComponentsContext } from "../../../editor/ComponentsContext";
 import { useBlockNoteEditor } from "../../../hooks/useBlockNoteEditor";
 import { useEditorContentOrSelectionChange } from "../../../hooks/useEditorContentOrSelectionChange";
-import { useSelectedBlocks } from "../../../hooks/useSelectedBlocks";
 import { useDictionary } from "../../../i18n/dictionary";
 import { ColorIcon } from "../../ColorPicker/ColorIcon";
 import { ColorPicker } from "../../ColorPicker/ColorPicker";
+import { useIsStyleApplicable } from "./common";
 
 function checkColorInSchema<Color extends "text" | "background">(
   color: Color,
@@ -53,7 +53,7 @@ export const ColorStyleButton = () => {
   const textColorInSchema = checkColorInSchema("text", editor);
   const backgroundColorInSchema = checkColorInSchema("background", editor);
 
-  const selectedBlocks = useSelectedBlocks(editor);
+  const isApplicable = useIsStyleApplicable();
 
   const [currentTextColor, setCurrentTextColor] = useState<string>(
     textColorInSchema
@@ -126,14 +126,8 @@ export const ColorStyleButton = () => {
       return false;
     }
 
-    for(const block of selectedBlocks) {
-      if(block.content !== undefined) {
-        return true;
-      }
-    }
-
-    return false;
-  }, [backgroundColorInSchema, selectedBlocks, textColorInSchema]);
+    return isApplicable;
+  }, [backgroundColorInSchema, isApplicable, textColorInSchema]);
 
   if(!show || !editor.isEditable) {
     return null;

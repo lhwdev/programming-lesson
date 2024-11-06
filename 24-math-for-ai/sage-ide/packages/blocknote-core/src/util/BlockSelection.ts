@@ -1,7 +1,7 @@
 import { Fragment, Node, ResolvedPos, Slice } from "@tiptap/pm/model";
-import { EditorState, NodeSelection, Selection, SelectionRange } from "@tiptap/pm/state";
+import { EditorState, NodeSelection, Selection } from "@tiptap/pm/state";
 import { Mapping } from "@tiptap/pm/transform";
-import { resolvedNode, ResolvedNode, resolvedNodeFor, unresolvedNode } from "./ResolvedNode";
+import { ResolvedNode, resolvedNodeFor, unresolvedNode } from "./ResolvedNode";
 
 export function isBlockSelection(selection: Selection): selection is BlockSelection | NodeSelection {
   return selection instanceof BlockSelection || selection instanceof NodeSelection;
@@ -23,7 +23,7 @@ export function findBlockContainer(state: EditorState, pos: ResolvedPos): { pos:
 
   for(let depth = pos.depth; depth >= 0; depth--) {
     const node = pos.node(depth);
-    if(node.type === container) return { pos: pos.start(depth) - 1, node };
+    if(node.type === container) return { pos: pos.before(depth), node };
   }
 
   return null;
@@ -39,6 +39,10 @@ export abstract class BlockSelection extends Selection {
     const result = this.calculateNodes();
     this._nodes = result;
     return result;
+  }
+
+  plainNodes(): Node[] {
+    return this.nodes().map((node) => node.backing);
   }
 
   abstract anchorNode: ResolvedNode;
@@ -62,8 +66,8 @@ export class BlockRangeSelection extends BlockSelection {
     if(anchorBlock.parent !== headBlock.parent) {
       const parentDepth = anchorBlock.sharedDepth(headBlock.pos);
       const doc = anchorBlock.doc;
-      anchorBlock = doc.resolve(anchorBlock.start(parentDepth + 1) - 1);
-      headBlock = doc.resolve(headBlock.start(parentDepth + 1) - 1);
+      anchorBlock = doc.resolve(anchorBlock.before(parentDepth + 1));
+      headBlock = doc.resolve(headBlock.before(parentDepth + 1));
     }
 
     const anchorNode = anchorBlock.nodeAfter;
@@ -117,62 +121,7 @@ export class BlockRangeSelection extends BlockSelection {
   }
 
   override content(): Slice {
-    return new Slice(Fragment.from(this.nodes()), 0, 0);
-  }
-
-  override eq(selection: Selection): boolean {
-    return selection instanceof BlockRangeSelection
-      && selection.anchorPos.pos === this.anchorPos.pos
-      && selection.headPos.pos === this.headPos.pos;
-  }
-
-  override toJSON() {
-    return { type: "blocks_range", anchorNode: this.anchorPos.pos, headNode: this.headPos.pos };
-  }
-}
-
-export class MultipleBlockSelection extends BlockSelection {
-  protected _nodes: ResolvedNode[];
-
-  constructor(nodes: ResolvedPos[]) {
-    if(nodes.length === 0) throw new Error("expected at least one node");
-
-    if(nodes.some((node) => node.parent !== nodes[0].parent)) {
-      let parentDepth = nodes[0].depth;
-      for(const [index, node] of nodes.entries()) {
-        if(index === 0) continue;
-        const previous = nodes[index - 1];
-        parentDepth = node.sharedDepth(previous.start(parentDepth));
-      }
-      const doc = nodes[0].node(0);
-      nodes = nodes.map((node) => doc.resolve(node.start(parentDepth)));
-    }
-
-    const resolvedNodes = nodes.map(resolvedNode);
-
-    super(
-      nodes[0],
-      blockEnd(nodes[nodes.length - 1]),
-      resolvedNodes.map((node) => new SelectionRange(node.$pos, blockEnd(node.$pos, node))),
-    );
-    this._nodes = resolvedNodes;
-  }
-
-  override get anchorNode() { return this._nodes[0]; }
-  override get headNode() { return this._nodes[this._nodes.length - 1]; }
-
-  override calculateNodes(): ResolvedNode[] {
-    return this._nodes;
-  }
-
-  override map(doc: Node, mapping: Mapping): Selection {
-    const anchor = doc.resolve(mapping.map(this.anchorPos.pos));
-    const head = doc.resolve(mapping.map(this.headPos.pos));
-    return new BlockRangeSelection(anchor, head);
-  }
-
-  override content(): Slice {
-    return new Slice(Fragment.from(this.nodes()), 0, 0);
+    return new Slice(Fragment.from(this.plainNodes()), 0, 0);
   }
 
   override eq(selection: Selection): boolean {

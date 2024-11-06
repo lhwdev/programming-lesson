@@ -55,10 +55,14 @@ const BlockSelectionPmPlugin = new Plugin({
 
   props: {
     createSelectionBetween(_view, anchor, head) {
-      if(anchor.nodeAfter && head.nodeBefore) {
-        return BlockRangeSelection.createFromEndpoint(anchor, head);
-      }
-      return null;
+      if(anchor === head) return null;
+
+      const first = anchor.nodeAfter;
+      const last = head.nodeBefore;
+      if(!first || !last) return null;
+      if(first.isInline || last.isInline) return null;
+
+      return BlockRangeSelection.createFromEndpoint(anchor, head);
     },
   },
 });

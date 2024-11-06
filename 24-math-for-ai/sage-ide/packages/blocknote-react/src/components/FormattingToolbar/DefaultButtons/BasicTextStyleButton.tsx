@@ -18,8 +18,8 @@ import {
 import { useComponentsContext } from "../../../editor/ComponentsContext";
 import { useBlockNoteEditor } from "../../../hooks/useBlockNoteEditor";
 import { useEditorContentOrSelectionChange } from "../../../hooks/useEditorContentOrSelectionChange";
-import { useSelectedBlocks } from "../../../hooks/useSelectedBlocks";
 import { useDictionary } from "../../../i18n/dictionary";
+import { useIsStyleApplicable } from "./common";
 
 type BasicTextStyle = "bold" | "italic" | "underline" | "strike" | "code";
 
@@ -68,7 +68,7 @@ export const BasicTextStyleButton = <Style extends BasicTextStyle>(props: {
     editor,
   );
 
-  const selectedBlocks = useSelectedBlocks(editor);
+  const isApplicable = useIsStyleApplicable();
 
   const [active, setActive] = useState<boolean>(
     props.basicTextStyle in editor.getActiveStyles(),
@@ -98,8 +98,8 @@ export const BasicTextStyleButton = <Style extends BasicTextStyle>(props: {
       return false;
     }
     // Also don't show when none of the selected blocks have text content
-    return !!selectedBlocks.find((block) => block.content !== undefined);
-  }, [basicTextStyleInSchema, selectedBlocks]);
+    return isApplicable;
+  }, [basicTextStyleInSchema, isApplicable]);
 
   if(!show || !editor.isEditable) {
     return null;

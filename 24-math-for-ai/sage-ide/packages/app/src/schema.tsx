@@ -1,7 +1,7 @@
 import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, defaultStyleSpecs, insertOrUpdateBlock } from "@blocknote/core";
 import { RiBox1Fill, RiCalculatorFill, RiCodeFill } from "react-icons/ri";
 import { Alert } from "./nodes/Alert";
-import { BasicTextStyleButton, BlockTypeSelect, ColorStyleButton, CreateLinkButton, FileCaptionButton, FileReplaceButton, FormattingToolbar, getDefaultReactSlashMenuItems, NestBlockButton, TextAlignButton, UnnestBlockButton, useBlockNoteEditor, useComponentsContext } from "@blocknote/react";
+import { FormattingToolbar, getDefaultReactSlashMenuItems, getFormattingToolbarItems, useBlockNoteEditor, useComponentsContext } from "@blocknote/react";
 import { MathInline } from "./nodes/math/MathInline";
 import { CodeInline } from "./nodes/codeInline/CodeInline";
 import { ReactNode } from "react";
@@ -101,49 +101,11 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
 }
 
 export function MyFormattingToolbar() {
+  const editor = useBlockNoteEditor();
+  const insideBlock = editor.isInsideBlock();
   return (
     <FormattingToolbar>
-      <BlockTypeSelect key="blockTypeSelect" />
-
-      <FileCaptionButton key="fileCaptionButton" />
-      <FileReplaceButton key="replaceFileButton" />
-
-      <BasicTextStyleButton
-        basicTextStyle="bold"
-        key="boldStyleButton"
-      />
-      <BasicTextStyleButton
-        basicTextStyle="italic"
-        key="italicStyleButton"
-      />
-      <BasicTextStyleButton
-        basicTextStyle="underline"
-        key="underlineStyleButton"
-      />
-      <BasicTextStyleButton
-        basicTextStyle="strike"
-        key="strikeStyleButton"
-      />
-
-      <TextAlignButton
-        textAlignment="left"
-        key="textAlignLeftButton"
-      />
-      <TextAlignButton
-        textAlignment="center"
-        key="textAlignCenterButton"
-      />
-      <TextAlignButton
-        textAlignment="right"
-        key="textAlignRightButton"
-      />
-
-      <ColorStyleButton key="colorStyleButton" />
-
-      <NestBlockButton key="nestBlockButton" />
-      <UnnestBlockButton key="unnestBlockButton" />
-
-      <CreateLinkButton key="createLinkButton" />
+      {getFormattingToolbarItems(undefined, insideBlock)}
 
       {/* <Code */}
       <ToggleStyleButton

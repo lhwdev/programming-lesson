@@ -1,7 +1,7 @@
 import { Block, PartialBlock } from "../../blocks/defaultBlocks";
 import type { BlockNoteEditor } from "../../editor/BlockNoteEditor";
 
-import { checkDefaultBlockTypeInSchema } from "../../blocks/defaultBlockTypeGuards";
+import { checkDefaultBlockTypeInSchema, checkDefaultInlineContentTypeInSchema } from "../../blocks/defaultBlockTypeGuards";
 import {
   BlockSchema,
   InlineContentSchema,
@@ -20,11 +20,12 @@ function setSelectionToNextContentEditableBlock<
   I extends InlineContentSchema,
   S extends StyleSchema,
 >(editor: BlockNoteEditor<BSchema, I, S>) {
-  let block = editor.getTextCursorPosition().block;
+  if(!editor.isInsideBlock()) return;
+  let block = editor.getTextCursorPosition()!.block;
   let contentType = editor.schema.blockSchema[block.type].content;
 
   while(contentType === "none") {
-    block = editor.getTextCursorPosition().nextBlock!;
+    block = editor.getTextCursorPosition()!.nextBlock!;
     contentType = editor.schema.blockSchema[block.type].content as
     | "inline"
     | "table"
@@ -45,7 +46,9 @@ export function insertOrUpdateBlock<
   editor: BlockNoteEditor<BSchema, I, S>,
   block: PartialBlock<BSchema, I, S>,
 ): Block<BSchema, I, S> {
-  const currentBlock = editor.getTextCursorPosition().block;
+  const position = editor.getTextCursorPosition();
+  if(!position) return 0 as any;
+  const currentBlock = position.block;
 
   if(currentBlock.content === undefined) {
     throw new Error("Slash Menu open in a block that doesn't contain content.");
@@ -63,12 +66,12 @@ export function insertOrUpdateBlock<
   } else {
     editor.insertBlocks([block], currentBlock, "after");
     editor.setTextCursorPosition(
-      editor.getTextCursorPosition().nextBlock!,
+      position.nextBlock!,
       "end",
     );
   }
 
-  const insertedBlock = editor.getTextCursorPosition().block;
+  const insertedBlock = editor.getTextCursorPosition()!.block;
   setSelectionToNextContentEditableBlock(editor);
 
   return insertedBlock;
@@ -271,6 +274,20 @@ export function getDefaultSlashMenuItems<
     });
   }
 
+  if(checkDefaultInlineContentTypeInSchema("footnoteReference", editor)) {
+    items.push({
+      onItemClick: () => {
+        editor._tiptapEditor.commands.addFootnote();
+        // editor.insertInlineContent([{ type: "footnoteReference", props: { id: "" }, content: [] }]);
+      },
+      key: "footnote_reference",
+      title: "격주",
+      subtext: "문서의 끝에 격주를 추가합니다.",
+      aliases: ["footnote", "격주"],
+      group: "고급",
+    });
+  }
+
   if(checkDefaultBlockTypeInSchema("blockColumn", editor)) {
     items.push({
       onItemClick: () => {
@@ -282,7 +299,7 @@ export function getDefaultSlashMenuItems<
       title: "가로 열",
       subtext: "내용을 가로로 나눕니다.",
       aliases: ["column", "가로", "열"],
-      group: "기타",
+      group: "고급",
     });
   }
 

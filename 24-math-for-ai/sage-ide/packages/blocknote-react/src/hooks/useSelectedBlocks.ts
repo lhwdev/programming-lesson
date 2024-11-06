@@ -27,15 +27,20 @@ export function useSelectedBlocks<
 
   const e = editor;
 
+  const getSelectedBlocks = () => {
+    const block = e.getSelection()?.blocks;
+    if(block) return block;
+    const position = e.getTextCursorPosition();
+    return position ? [position.block] : [];
+  };
+
   const [selectedBlocks, setSelectedBlocks] = useState<
     Block<BSchema, ISchema, SSchema>[]
-  >(() => e.getSelection()?.blocks || [e.getTextCursorPosition().block]);
+  >(() => getSelectedBlocks());
 
   useEditorContentOrSelectionChange(
     () =>
-      setSelectedBlocks(
-        e.getSelection()?.blocks || [e.getTextCursorPosition().block],
-      ),
+      setSelectedBlocks(getSelectedBlocks()),
     e,
   );
 

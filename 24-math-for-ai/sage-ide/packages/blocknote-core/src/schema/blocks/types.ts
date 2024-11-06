@@ -61,6 +61,7 @@ export type BlockConfig =
     type: string;
     readonly propSchema: PropSchema;
     content: "inline" | "none" | "table";
+    blockContent?: boolean;
     isSelectable?: boolean;
     isFileBlock?: false;
   }

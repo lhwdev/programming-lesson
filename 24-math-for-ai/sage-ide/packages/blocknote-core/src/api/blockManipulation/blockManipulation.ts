@@ -1,4 +1,4 @@
-import { Node } from "prosemirror-model";
+import { Node, ResolvedPos, Schema } from "prosemirror-model";
 
 import { selectionToInsertionEnd } from "@tiptap/core";
 import { Transaction } from "prosemirror-state";
@@ -267,7 +267,7 @@ export function insertContentAt<
   I extends InlineContentSchema,
   S extends StyleSchema,
 >(
-  position: any,
+  position: number | { from: number; to: number },
   nodes: Node[],
   editor: BlockNoteEditor<BSchema, I, S>,
   options: {
@@ -346,4 +346,13 @@ export function insertContentAt<
   editor.dispatch(tr);
 
   return true;
+}
+
+export function nearestBlockContainer(pos: ResolvedPos): Node | null {
+  const blockContainer = pos.doc.type.schema.nodes.blockContainer;
+  for(let depth = pos.depth; depth >= 0; depth--) {
+    const node = pos.node(depth);
+    if(node.type === blockContainer) return node;
+  }
+  return null;
 }

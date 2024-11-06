@@ -1,5 +1,4 @@
 import Bold from "@tiptap/extension-bold";
-import Code from "@tiptap/extension-code";
 import Italic from "@tiptap/extension-italic";
 import Strike from "@tiptap/extension-strike";
 import Underline from "@tiptap/extension-underline";
@@ -31,6 +30,7 @@ import { ImageBlock } from "./ImageBlockContent/ImageBlockContent";
 import { VideoBlock } from "./VideoBlockContent/VideoBlockContent";
 import { AudioBlock } from "./AudioBlockContent/AudioBlockContent";
 import { BlockColumn } from "./BlockColumnContent/BlockColumnContent";
+import { FootnoteReference } from "./FootnoteContent/FootnoteReferenceContent";
 
 export const defaultBlockSpecs = {
   paragraph: Paragraph,
@@ -74,6 +74,7 @@ export interface DefaultStyleSchema extends _DefaultStyleSchema {}
 export const defaultInlineContentSpecs = {
   text: { config: "text", implementation: {} as any },
   link: { config: "link", implementation: {} as any },
+  footnoteReference: FootnoteReference,
 } satisfies InlineContentSpecs;
 
 export const defaultInlineContentSchema = getInlineContentSchemaFromSpecs(

@@ -63,6 +63,7 @@ export const EditLinkMenuItems = (
         autoFocus={true}
         placeholder={dict.link_toolbar.form.url_placeholder}
         value={currentUrl}
+        rightSection="submit"
         onKeyDown={handleEnter}
         onChange={handleUrlChange}
         onSubmit={handleSubmit}

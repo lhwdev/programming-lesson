@@ -4,6 +4,16 @@ function readonly(action: string, name: any): never {
   throw new TypeError(`Cannot ${action} property ${name}, merged object is readonly`);
 }
 
+function withOtherProto(base: object, otherProto: object): object {
+  return new Proxy(base, {
+    getPrototypeOf(target) {
+      const baseProto = Reflect.getPrototypeOf(target);
+      if(!baseProto) return otherProto;
+      return withOtherProto(baseProto, otherProto);
+    },
+  });
+}
+
 export function mergeObject<Base extends object, Other extends object>(
   base: Base,
   other: Other,
@@ -20,7 +30,20 @@ export function mergeObject<Base extends object, Other extends object>(
     getPrototypeOf: (_) => {
       const baseProto = Reflect.getPrototypeOf(base);
       const otherProto = Reflect.getPrototypeOf(other);
-      return baseProto && otherProto ? mergeObject(baseProto, otherProto) : (otherProto ?? baseProto);
+
+      if(baseProto === otherProto) return baseProto;
+
+      if(baseProto && otherProto) {
+        const objectProto = Object.prototype;
+        if(baseProto === objectProto) {
+          return withOtherProto(otherProto, objectProto);
+        }
+        if(otherProto === objectProto) {
+          return withOtherProto(baseProto, objectProto);
+        }
+        return withOtherProto(otherProto, baseProto);
+      }
+      return otherProto ?? baseProto;
     },
     has: (_, p) => Reflect.has(other, p) || Reflect.has(base, p),
     isExtensible: (_) => false,

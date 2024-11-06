@@ -7,7 +7,6 @@ import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import { Gapcursor } from "@tiptap/extension-gapcursor";
 import { HardBreak } from "@tiptap/extension-hard-break";
 import { History } from "@tiptap/extension-history";
-import { Link } from "@tiptap/extension-link";
 import { Text } from "@tiptap/extension-text";
 import * as Y from "yjs";
 import { createCopyToClipboardExtension } from "../api/exporters/copyExtension";
@@ -30,6 +29,10 @@ import {
 } from "../schema";
 import { BlockBehaviorExtension } from "../extensions/Block/BlockBehaviorExtension";
 import { ColumnBlockGroup } from "../blocks/BlockColumnContent/BlockColumnContent";
+import { FootnotesContent } from "../blocks/FootnoteContent/FootnotesContent";
+import { FootnoteContent } from "../blocks/FootnoteContent/FootnoteContent";
+import { Link } from "../pm-nodes/Link/Link";
+import { StubBlock } from "../pm-nodes/StubBlock";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -88,6 +91,10 @@ export const getBlockNoteExtensions = <
           },
         };
       },
+    }).configure({
+      openOnClick(view, event) {
+        return !view.editable || event.ctrlKey || event.metaKey;
+      },
     }),
     ...Object.values(opts.styleSpecs).map((styleSpec) => {
       return styleSpec.implementation.mark;
@@ -117,7 +124,7 @@ export const getBlockNoteExtensions = <
     BlockBehaviorExtension.configure({}),
 
     // nodes
-    Doc,
+    Doc.configure({ content: "blockGroup footnotes?" }),
     BlockContainer.configure({
       editor: opts.editor,
       domAttributes: opts.domAttributes,
@@ -125,7 +132,12 @@ export const getBlockNoteExtensions = <
     BlockGroup.configure({
       domAttributes: opts.domAttributes,
     }),
+    // StubBlock,
+
     ColumnBlockGroup.configure({}),
+    FootnotesContent,
+    FootnoteContent,
+
     ...Object.values(opts.inlineContentSpecs)
       .filter((a) => a.config !== "link" && a.config !== "text")
       .map((inlineContentSpec) => {

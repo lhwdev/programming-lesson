@@ -1,9 +1,9 @@
-import { Node as PMNode } from "prosemirror-model";
+import { Fragment, Node as PMNode, Schema } from "prosemirror-model";
 import { createBlockSpecFromStronglyTypedTiptapNode, createStronglyTypedTiptapNode } from "../../schema";
 import { Node } from "@tiptap/core";
-import { EditorState } from "prosemirror-state";
 import { mergeCSSClasses } from "../../util/browser";
 import { defaultProps } from "../defaultProps";
+import { BlockExtra } from "../../pm-nodes/BlockContainer";
 
 const propSchema = {
   ...defaultProps,
@@ -14,9 +14,11 @@ export const BlockColumnContent = createStronglyTypedTiptapNode({
   content: "inline*",
   group: "blockContent",
 
-  createBlockGroup(state: EditorState, children: PMNode[]): PMNode {
-    return state.schema.nodes[ColumnBlockGroup.name].create(null, children);
-  },
+  blockExtra: {
+    createBlockGroup(schema: Schema, children: Fragment): PMNode {
+      return schema.nodes[ColumnBlockGroup.name].create(null, children);
+    },
+  } satisfies BlockExtra,
 
   renderHTML() {
     return ["div", { class: "this-is-column" }, 0];

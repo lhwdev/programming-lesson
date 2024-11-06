@@ -1,11 +1,11 @@
 // NOTE: Original content came from prosemirror-dropcursor(https://github.com/ProseMirror/prosemirror-dropcursor)
-import { Plugin, EditorState, PluginView, Selection, NodeSelection } from "prosemirror-state";
+import { Plugin, EditorState, PluginView, Selection } from "prosemirror-state";
 // @ts-expect-error parseFromClipboard is exported for testing, but not marked by types.
 import { EditorView, __parseFromClipboard } from "prosemirror-view";
 import { dropPoint } from "prosemirror-transform";
 import { ResolvedPos } from "prosemirror-model";
-import { BlockSelection, isBlockSelection } from "../../util/BlockSelection";
-import { combineTransactionSteps } from "@tiptap/core";
+import { isBlockSelection } from "../../util/BlockSelection";
+import { BlockList } from "../Block/BlockList";
 
 interface DropCursorOptions {
   classes: { root: string; bar: string };
@@ -20,7 +20,7 @@ class DropCursor {
   element: HTMLElement;
   isBlock: boolean;
   source: Selection;
-  depth: number = -1;
+  depth = { default: 0, target: 0 };
 
   constructor(public readonly parent: DropCursorView, public pos: CursorPos) {
     this.source = parent.view.state.selection;
@@ -54,7 +54,7 @@ class DropCursor {
     for(let depth = pos.depth; depth >= 0; depth--) {
       const node = pos.node(depth);
       if(node.type === container) {
-        const newPos = doc.resolve(pos.start(depth) - 1);
+        const newPos = doc.resolve(pos.before(depth));
         if(client) {
           const rect = this.parent.view.coordsAtPos(newPos.pos);
           const yCenter = (rect.top + rect.bottom) / 2;
@@ -92,28 +92,33 @@ class DropCursor {
 
       const nodePos = before ? pos.pos - before.nodeSize : pos.pos;
       const node = view.nodeDOM(nodePos) as HTMLElement; // this is node, so this should not be TextNode
+      if(!node) {
+        console.error("!node, pos=", nodePos, "node=", view.state.doc.resolve(nodePos).nodeAfter, " text=", view.state.doc.cut(0, nodePos).textContent);
+        return;
+      }
       const nodeRect = node.getBoundingClientRect();
       const editorRect = view.dom.children.item(0)!.getBoundingClientRect();
 
-      let maxDepth = 2;
+      let defaultDepth = 1;
       for(let currentDepth = pos.depth; currentDepth >= 0; currentDepth--) {
-        if(pos.node(currentDepth).type === container) maxDepth++;
+        if(pos.node(currentDepth).type === container) defaultDepth++;
       }
 
       let depth;
       if(client) {
         const deltaX = client.x - editorRect.x;
-        depth = Math.min(Math.ceil(deltaX / 26), maxDepth);
-        if(depth < 1) depth = 1;
+        depth = Math.ceil(deltaX / 26);
+        depth = Math.min(depth, defaultDepth + 1);
+        depth = Math.max(depth, defaultDepth - 1);
       } else {
-        depth = maxDepth;
+        depth = defaultDepth;
       }
-      this.depth = depth;
+      this.depth = { default: defaultDepth, target: depth };
 
       // Update the count of bars
       const currentDepth = element.children.length;
       for(let i = depth; i < currentDepth; i++) { // if depth < currentDepth
-        element.children.item(i)!.remove();
+        element.children.item(0)!.remove();
       }
       for(let i = currentDepth; i < depth; i++) { // if currentDepth < depth
         element.appendChild(document.createElement("div"))
@@ -230,15 +235,26 @@ export function dropCursor(options: DropCursorOptions): Plugin {
       return dropCursorView;
     },
 
-    appendTransaction(transactions, oldState, newState) {
+    appendTransaction(transactions, _oldState, newState) {
+      const cursor = dropCursorView?.cursor;
+      if(!cursor) return null;
+
       const tr = newState.tr;
       for(const source of transactions) {
         if(source.getMeta("uiEvent") !== "drop") continue;
 
         const target = tr.selection;
-        if(target instanceof BlockSelection) {
+        const depth = cursor.depth;
+        const delta = depth.target - depth.default;
+        console.log(depth);
 
+        const props = { state: newState, tr, dispatch: () => {} };
+        if(delta === 1) {
+          BlockList.BNSinkListItem(target)(props);
+        } else if(delta === -1) {
+          BlockList.BNLiftListItem(target)(props);
         }
+        console.log(tr);
       }
 
       return tr.docChanged ? tr : null;

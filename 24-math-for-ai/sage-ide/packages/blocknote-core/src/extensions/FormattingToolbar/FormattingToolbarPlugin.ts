@@ -6,6 +6,7 @@ import type { BlockNoteEditor } from "../../editor/BlockNoteEditor";
 import { UiElementPosition } from "../../extensions-shared/UiElementPosition";
 import { BlockSchema, InlineContentSchema, StyleSchema } from "../../schema";
 import { EventEmitter } from "../../util/EventEmitter";
+import { getBlockExtra } from "../../pm-nodes/BlockContainer";
 
 export type FormattingToolbarState = UiElementPosition;
 
@@ -23,7 +24,10 @@ export class FormattingToolbarView implements PluginView {
     to: number;
   }) => boolean = ({ state, from, to, view }) => {
       const { doc, selection } = state;
-      const { empty } = selection;
+      const { empty, $anchor } = selection;
+
+      const extra = getBlockExtra($anchor);
+      if(!extra || extra.ignoreStyles || extra.alien) return false;
 
       // Sometime check for `empty` is not enough.
       // Doubleclick an empty paragraph returns a node size of 2.

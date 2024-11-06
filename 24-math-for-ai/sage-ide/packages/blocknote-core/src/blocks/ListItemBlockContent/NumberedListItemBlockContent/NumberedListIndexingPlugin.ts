@@ -23,16 +23,16 @@ export const NumberedListIndexingPlugin = () => {
           let newIndex = "1";
           const isFirstBlockInDoc = pos === 1;
 
-          const blockInfo = getBlockInfoFromPos(tr.doc, pos + 1)!;
-          if(blockInfo === undefined) {
+          const blockInfo = getBlockInfoFromPos(tr.doc, pos + 1);
+          if(!blockInfo) {
             return;
           }
 
           // Checks if this block is the start of a new ordered list, i.e. if it's the first block in the document, the
           // first block in its nesting level, or the previous block is not an ordered list item.
           if(!isFirstBlockInDoc) {
-            const prevBlockInfo = getBlockInfoFromPos(tr.doc, pos - 2)!;
-            if(prevBlockInfo === undefined) {
+            const prevBlockInfo = getBlockInfoFromPos(tr.doc, pos - 2);
+            if(!prevBlockInfo) {
               return;
             }
 

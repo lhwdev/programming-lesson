@@ -88,7 +88,7 @@ export function createInlineContentSpecFromTipTapNode<
     {
       type: node.name as T["name"],
       propSchema,
-      content: node.config.content === "inline*" ? "styled" : "none",
+      content: node.config.content === "inline*" ? "styled" : "none" as T["config"]["content"] extends "inline*" ? "styled" : "none",
     },
     {
       node,

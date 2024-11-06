@@ -20,11 +20,13 @@ import { FileRenameButton } from "./DefaultButtons/FileRenameButton";
 import { FileDownloadButton } from "./DefaultButtons/FileDownloadButton";
 import { FilePreviewButton } from "./DefaultButtons/FilePreviewButton";
 import { FileDeleteButton } from "./DefaultButtons/FileDeleteButton";
+import { useBlockNoteEditor } from "../../hooks/useBlockNoteEditor";
 
 export const getFormattingToolbarItems = (
-  blockTypeSelectItems?: BlockTypeSelectItem[],
+  blockTypeSelectItems: BlockTypeSelectItem[] | undefined,
+  insideBlock: boolean,
 ): JSX.Element[] => [
-  <BlockTypeSelect key="blockTypeSelect" items={blockTypeSelectItems} />,
+  insideBlock && <BlockTypeSelect key="blockTypeSelect" items={blockTypeSelectItems} />,
   <FileCaptionButton key="fileCaptionButton" />,
   <FileReplaceButton key="replaceFileButton" />,
   <FileRenameButton key="fileRenameButton" />,
@@ -38,14 +40,14 @@ export const getFormattingToolbarItems = (
     key="underlineStyleButton"
   />,
   <BasicTextStyleButton basicTextStyle="strike" key="strikeStyleButton" />,
-  <TextAlignButton textAlignment="left" key="textAlignLeftButton" />,
-  <TextAlignButton textAlignment="center" key="textAlignCenterButton" />,
-  <TextAlignButton textAlignment="right" key="textAlignRightButton" />,
+  insideBlock && <TextAlignButton textAlignment="left" key="textAlignLeftButton" />,
+  insideBlock && <TextAlignButton textAlignment="center" key="textAlignCenterButton" />,
+  insideBlock && <TextAlignButton textAlignment="right" key="textAlignRightButton" />,
   <ColorStyleButton key="colorStyleButton" />,
-  <NestBlockButton key="nestBlockButton" />,
-  <UnnestBlockButton key="unnestBlockButton" />,
+  insideBlock && <NestBlockButton key="nestBlockButton" />,
+  insideBlock && <UnnestBlockButton key="unnestBlockButton" />,
   <CreateLinkButton key="createLinkButton" />,
-];
+].filter((item) => !!item);
 
 // TODO: props.blockTypeSelectItems should only be available if no children
 //  are passed
@@ -65,12 +67,13 @@ export const FormattingToolbar = (
   props: FormattingToolbarProps & { children?: ReactNode },
 ) => {
   const Components = useComponentsContext()!;
+  const editor = useBlockNoteEditor();
 
   return (
     <Components.FormattingToolbar.Root
       className="bn-toolbar bn-formatting-toolbar"
     >
-      {props.children || getFormattingToolbarItems(props.blockTypeSelectItems)}
+      {props.children || getFormattingToolbarItems(props.blockTypeSelectItems, editor.isInsideBlock())}
     </Components.FormattingToolbar.Root>
   );
 };

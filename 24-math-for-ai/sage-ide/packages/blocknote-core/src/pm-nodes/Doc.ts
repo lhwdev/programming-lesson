@@ -1,7 +1,22 @@
 import { Node } from "@tiptap/core";
+import { Node as PMNode } from "prosemirror-model";
 
-export const Doc = Node.create({
+interface DocAttributes {
+  content: string;
+}
+
+export const Doc = Node.create<DocAttributes>({
   name: "doc",
   topNode: true,
-  content: "blockGroup",
+  content() { return this.options.content; },
+
+  addOptions() {
+    return {
+      content: "blockGroup",
+    };
+  },
 });
+
+export function getRootGroup(doc: PMNode) {
+  return doc.firstChild!;
+}

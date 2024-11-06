@@ -2,10 +2,12 @@ import { Editor } from "@tiptap/core";
 import { getBlockInfoFromPos } from "../../api/getBlockInfoFromPos";
 
 export const handleEnter = (editor: Editor) => {
-  const { contentNode, contentType } = getBlockInfoFromPos(
+  const blockInfo = getBlockInfoFromPos(
     editor.state.doc,
     editor.state.selection.from,
-  )!;
+  );
+  if(!blockInfo) return false;
+  const { contentNode, contentType } = blockInfo;
 
   const selectionEmpty
     = editor.state.selection.anchor === editor.state.selection.head;

@@ -653,7 +653,7 @@ export class SideMenuView<
       this.editor._tiptapEditor.state.doc,
       pos.pos,
     );
-    if(blockInfo === undefined) {
+    if(!blockInfo) {
       return;
     }
 

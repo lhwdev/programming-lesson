@@ -1,5 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
+import { getRootGroup } from "../../pm-nodes/Doc";
+import { Node } from "prosemirror-model";
 
 // based on https://github.com/ueberdosis/tiptap/blob/40a9404c94c7fef7900610c195536384781ae101/demos/src/Experiments/TrailingNode/Vue/trailing-node.ts
 
@@ -53,7 +55,7 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
               return value;
             }
 
-            let lastNode = tr.doc.lastChild;
+            let lastNode: Node | null = getRootGroup(tr.doc);
 
             if(!lastNode || lastNode.type.name !== "blockGroup") {
               throw new Error("Expected blockGroup");

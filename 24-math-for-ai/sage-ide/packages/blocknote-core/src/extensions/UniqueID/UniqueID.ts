@@ -5,7 +5,7 @@ import {
   getChangedRanges,
 } from "@tiptap/core";
 import { Fragment, Slice } from "prosemirror-model";
-import { Plugin, PluginKey } from "prosemirror-state";
+import { Plugin, PluginKey, Transaction } from "prosemirror-state";
 import { v4 } from "uuid";
 
 /**
@@ -41,7 +41,15 @@ function findDuplicates(items: any) {
   return duplicates;
 }
 
-const UniqueID = Extension.create({
+export interface UniqueIDOptions {
+  attributeName: string;
+  types: string[];
+  setIdAttribute: boolean;
+  generateID: () => string;
+  filterTransaction?: (this: UniqueIDOptions, tr: Transaction) => boolean;
+}
+
+const UniqueID = Extension.create<UniqueIDOptions>({
   name: "uniqueID",
   // we’ll set a very high priority to make sure this runs first
   // and is compatible with `appendTransaction` hooks of other extensions
@@ -66,7 +74,6 @@ const UniqueID = Extension.create({
 
         return v4();
       },
-      filterTransaction: null,
     };
   },
   addGlobalAttributes() {

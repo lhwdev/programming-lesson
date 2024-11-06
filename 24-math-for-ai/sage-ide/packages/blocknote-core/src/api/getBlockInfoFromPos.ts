@@ -42,7 +42,7 @@ export function getBlockInfo(blockContainer: Node): BlockInfoWithoutPositions {
  * @param pos An integer position.
  * @returns A BlockInfo object for the nearest blockContainer node.
  */
-export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo {
+export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo | null {
   // If the position is outside the outer block group, we need to move it to the
   // nearest block. This happens when the collaboration plugin is active, where
   // the selection is placed at the very end of the doc.
@@ -51,7 +51,7 @@ export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo {
   if(pos <= outerBlockGroupStartPos) {
     pos = outerBlockGroupStartPos + 1;
 
-    while (
+    while(
       doc.resolve(pos).parent.type.name !== "blockContainer"
       && pos < outerBlockGroupEndPos
     ) {
@@ -60,7 +60,7 @@ export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo {
   } else if(pos >= outerBlockGroupEndPos) {
     pos = outerBlockGroupEndPos - 1;
 
-    while (
+    while(
       doc.resolve(pos).parent.type.name !== "blockContainer"
       && pos > outerBlockGroupStartPos
     ) {
@@ -80,11 +80,12 @@ export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo {
   let node = $pos.node(maxDepth);
   let depth = maxDepth;
 
-  while (true) {
+  while(true) {
     if(depth < 0) {
-      throw new Error(
-        "Could not find blockContainer node. This can only happen if the underlying BlockNote schema has been edited.",
-      );
+      // throw new Error(
+      //   "Could not find blockContainer node. This can only happen if the underlying BlockNote schema has been edited.",
+      // );
+      return null;
     }
 
     if(node.type.name === "blockContainer") {
