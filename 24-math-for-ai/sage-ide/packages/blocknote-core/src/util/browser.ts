@@ -12,7 +12,7 @@ export function formatKeyboardShortcut(shortcut: string, ctrlText = "Ctrl") {
   }
 }
 
-export function mergeCSSClasses(...classes: string[]) {
+export function mergeCSSClasses(...classes: (string | null | undefined | false)[]) {
   return classes.filter((c) => c).join(" ");
 }
 

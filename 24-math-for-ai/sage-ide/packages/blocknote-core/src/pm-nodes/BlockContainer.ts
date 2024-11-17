@@ -29,7 +29,17 @@ const BlockAttributes: Record<string, string> = {
   depthChange: "data-depth-change",
 };
 
+declare module "prosemirror-model" {
+  interface NodeSpec {
+    blockExtra?: BlockExtra;
+  }
+}
+
 declare module "@tiptap/core" {
+  interface NodeConfig {
+    blockExtra?: BlockExtra;
+  }
+
   interface Commands<ReturnType> {
     block: {
       BNCreateBlock: (pos: number) => ReturnType;
@@ -70,7 +80,7 @@ export const BlockContainer = Node.create<{
   name: "blockContainer",
   group: "blockContainer",
   // A block always contains content, and optionally a blockGroup which contains nested blocks
-  content: "blockContent blockGroup?",
+  content: "blockContent anyBlockGroup?",
   // Ensures content-specific keyboard handlers trigger first.
   priority: 50,
   defining: true,
@@ -101,7 +111,7 @@ export const BlockContainer = Node.create<{
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }) {
     const blockOuter = document.createElement("div");
     blockOuter.className = "bn-block-outer";
     blockOuter.setAttribute("data-node-type", "blockOuter");
@@ -552,7 +562,7 @@ export const BlockContainer = Node.create<{
             const selectionAtBlockStart = state.selection.from === startPos + 1;
 
             if(selectionAtBlockStart) {
-              return commands.liftListItem("blockContainer");
+              return commands.BNLiftListItem();
             }
 
             return false;
@@ -657,7 +667,7 @@ export const BlockContainer = Node.create<{
               && blockEmpty
               && blockIndented
             ) {
-              return commands.liftListItem("blockContainer");
+              return commands.BNLiftListItem();
             }
 
             return false;
@@ -740,7 +750,7 @@ export const BlockContainer = Node.create<{
           // don't handle tabs if a toolbar is shown, so we can tab into / out of it
           return false;
         }
-        this.editor.commands.sinkListItem("blockContainer");
+        this.editor.commands.BNSinkListItem();
         return true;
       },
       "Shift-Tab": () => {
@@ -752,7 +762,7 @@ export const BlockContainer = Node.create<{
           // don't handle tabs if a toolbar is shown, so we can tab into / out of it
           return false;
         }
-        this.editor.commands.liftListItem("blockContainer");
+        this.editor.commands.BNLiftListItem();
         return true;
       },
     };
@@ -819,7 +829,9 @@ export function getBlockExtra($pos: ResolvedPos): BlockExtra | null {
 */
 
 export function createBlockGroup(schema: Schema, contentNodeType: NodeType, children: Content) {
-  const createBlock: (state: Schema, children: Fragment) => PMNode = getBlockExtra(contentNodeType).createBlockGroup
+  const blockExtra = getBlockExtra(contentNodeType);
+
+  const createBlock: (state: Schema, children: Fragment) => PMNode = blockExtra.createBlockGroup
     ?? ((schema, children) => schema.nodes.blockGroup.create({}, children));
 
   return createBlock(schema, Fragment.from(children));

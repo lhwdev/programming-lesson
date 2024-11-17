@@ -1,6 +1,5 @@
 import { Node } from "@tiptap/core";
 import { FootnoteRules } from "./FootnoteRules";
-import { BlockExtra } from "../../pm-nodes/BlockContainer";
 
 export const FootnotesContent = Node.create({
   name: "footnotes",
@@ -13,7 +12,7 @@ export const FootnotesContent = Node.create({
 
   blockExtra: {
     placeholder: "격주의 내용을 입력하세요.",
-  } satisfies BlockExtra,
+  },
 
   parseHTML() {
     return [

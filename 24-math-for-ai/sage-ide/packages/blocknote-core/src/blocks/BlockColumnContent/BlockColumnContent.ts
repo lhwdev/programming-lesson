@@ -3,7 +3,6 @@ import { createBlockSpecFromStronglyTypedTiptapNode, createStronglyTypedTiptapNo
 import { Node } from "@tiptap/core";
 import { mergeCSSClasses } from "../../util/browser";
 import { defaultProps } from "../defaultProps";
-import { BlockExtra } from "../../pm-nodes/BlockContainer";
 
 const propSchema = {
   ...defaultProps,
@@ -18,7 +17,7 @@ export const BlockColumnContent = createStronglyTypedTiptapNode({
     createBlockGroup(schema: Schema, children: Fragment): PMNode {
       return schema.nodes[ColumnBlockGroup.name].create(null, children);
     },
-  } satisfies BlockExtra,
+  },
 
   renderHTML() {
     return ["div", { class: "this-is-column" }, 0];
@@ -29,7 +28,7 @@ export const BlockColumn = createBlockSpecFromStronglyTypedTiptapNode(BlockColum
 
 export const ColumnBlockGroup = Node.create({
   name: "columnBlockGroup",
-  group: "blockGroup",
+  group: "anyBlockGroup",
   content: "blockContainer+",
 
   renderHTML({ HTMLAttributes }) {

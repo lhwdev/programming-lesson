@@ -32,7 +32,7 @@ const BlockListCommands = {
       if(dispatch) {
         const nestedBefore = nodeBefore.lastChild && isBlockGroup(nodeBefore.lastChild.type);
         const inner = Fragment.from(nestedBefore ? blockContainer.create() : null);
-        const blockGroup = createBlockGroup(state.schema, $from.node(range.depth - 1).firstChild!.type, inner);
+        const blockGroup = createBlockGroup(state.schema, nodeBefore.firstChild!.type, inner);
         const slice = new Slice(
           Fragment.from(blockContainer.create(null, Fragment.from(blockGroup))),
           nestedBefore ? 3 : 1,

@@ -229,7 +229,63 @@ export function createInternalBlockSpec<T extends BlockConfig>(
     InlineContentSchema,
     StyleSchema
   >,
-) {
+): BlockSpec<T, any, InlineContentSchema, StyleSchema> {
+  // if(config.hasBlockChildren) {
+  //   const node = implementation.node;
+  //   if(node.config.blockExtra?.createBlockGroup) {
+  //     throw new Error("hasBlockChildren option is merely a wrapper around blockExtra.createBlockGroup");
+  //   }
+//
+  //   const blockGroupNode = Node.create({
+  //     name: `${node.type}$blockGroup`,
+  //     group: "anyBlockGroup",
+//
+  //     renderHTML() {
+  //       const div = document.createElement("div");
+  //       div.setAttribute("data-tmp-placeholder", "true");
+  //       return { dom: div };
+  //     },
+//
+  //     addNodeView() {
+  //       const nodeView = node.config.addNodeView?.call({
+  //         name: node.type,
+  //         type: this.editor.schema.nodes[node.type],
+  //         options: node.options,
+  //         parent: node.parent?.config.addNodeView && (() => node.parent!.config.addNodeView!.call(this)),
+  //         editor: this.editor,
+  //         storage: node.storage,
+  //       });
+//
+  //       return ({ editor, node, getPos }) => {
+  //         const target = editor.state.doc.resolve(getPos() - 2);
+  //         nodeView({
+  //           editor,
+//
+  //         });
+  //       };
+  //     },
+  //   });
+//
+  //   implementation = {
+  //     ...implementation,
+  //     node: node.extend({
+  //       renderHTML() {
+  //         const div = document.createElement("div");
+  //         div.setAttribute("data-tmp-placeholder", "true");
+  //         return { dom: div };
+  //       },
+  //       addNodeView: null,
+  //       blockExtra: {
+  //         ...node.config.blockExtra,
+//
+  //         createBlockGroup(schema, children) {
+  //           return schema.nodes[blockGroupNode.type].create(null, children);
+  //         },
+  //       },
+  //     }),
+  //   };
+  // }
+
   return {
     config,
     implementation,

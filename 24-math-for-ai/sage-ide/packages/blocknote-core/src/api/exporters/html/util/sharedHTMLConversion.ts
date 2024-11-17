@@ -7,6 +7,7 @@ import {
   StyleSchema,
 } from "../../../../schema";
 import { nodeToBlock } from "../../../nodeConversions/nodeConversions";
+import { isBlockGroup } from "../../../../pm-nodes/BlockGroup";
 
 function doc(options: { document?: Document }) {
   return options.document || window.document;
@@ -51,7 +52,7 @@ export const serializeNodeInner = <
           ? node.firstChild!
           : undefined;
       const blockGroupNode
-        = node.childCount > 0 && node.lastChild!.type.spec.group === "blockGroup"
+        = node.childCount > 0 && isBlockGroup(node.lastChild!.type)
           ? node.lastChild!
           : undefined;
 

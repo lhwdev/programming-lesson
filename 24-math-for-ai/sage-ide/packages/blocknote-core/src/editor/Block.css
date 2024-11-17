@@ -482,3 +482,20 @@ sup:has(> .bn-footnote-reference) {
 .bn-container a:visited {
   color: var(--mantine-color-anchor);
 }
+
+.bn-quote {
+  padding-left: 16px;
+  position: relative;
+}
+
+.bn-quote::before {
+  border-left: 3px solid #888;
+  padding-left: 8px;
+
+  content: " ";
+  display: inline;
+  position: absolute;
+  left: 4px;
+  top: 2px;
+  bottom: 2px;
+}

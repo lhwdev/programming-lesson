@@ -9,6 +9,7 @@
     "react": "catalog:",
     "@types/react": "catalog:",
     "shiki": "catalog:",
-    "@mantine/core": "catalog:"
+    "@mantine/core": "catalog:",
+    "clsx": "catalog:"
   }
 }

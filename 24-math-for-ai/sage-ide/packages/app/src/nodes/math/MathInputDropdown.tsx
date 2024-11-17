@@ -5,16 +5,18 @@ import { MathInput } from "./MathInput";
 import { useCounter } from "@sage-ide/common/utils/useCounter.ts";
 import { TexHints } from "./TexHints";
 import { Editor } from "@tiptap/react";
+import { MathError } from "./MathView";
 
 interface Strings {
   placeholder: string;
 }
 
-export function MathInputDropdown({ strings, opened, setOpened, content, onChange, onEnter, children }: {
+export function MathInputDropdown({ strings, opened, setOpened, content, error, onChange, onEnter, children }: {
   opened: boolean;
   setOpened: (value: boolean) => void;
   strings: Strings;
   content: string;
+  error: MathError | null;
   onChange: (content: string) => void;
   onEnter: (value: string, direction?: "left" | "right") => void;
   children?: ReactNode;
@@ -37,6 +39,7 @@ export function MathInputDropdown({ strings, opened, setOpened, content, onChang
         <DropdownContent
           key={dropdownKey}
           content={content}
+          error={error}
           onChange={onChange}
           strings={strings}
           onEnter={onEnter}
@@ -46,8 +49,9 @@ export function MathInputDropdown({ strings, opened, setOpened, content, onChang
   );
 }
 
-function DropdownContent({ content, onChange, strings, onEnter }: {
+function DropdownContent({ content, error, onChange, strings, onEnter }: {
   content: string;
+  error: MathError | null;
   onChange: (content: string) => void;
   strings: Strings;
   onEnter: (value: string, direction?: "left" | "right") => void;
@@ -71,6 +75,7 @@ function DropdownContent({ content, onChange, strings, onEnter }: {
           <Group align="baseline" wrap="nowrap">
             <MathInput
               content={content}
+              error={error}
               onChange={onChange}
               strings={strings}
               onSubmit={onEnter}

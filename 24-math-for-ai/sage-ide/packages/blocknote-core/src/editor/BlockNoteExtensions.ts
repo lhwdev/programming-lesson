@@ -32,7 +32,6 @@ import { ColumnBlockGroup } from "../blocks/BlockColumnContent/BlockColumnConten
 import { FootnotesContent } from "../blocks/FootnoteContent/FootnotesContent";
 import { FootnoteContent } from "../blocks/FootnoteContent/FootnoteContent";
 import { Link } from "../pm-nodes/Link/Link";
-import { StubBlock } from "../pm-nodes/StubBlock";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -135,6 +134,7 @@ export const getBlockNoteExtensions = <
     // StubBlock,
 
     ColumnBlockGroup.configure({}),
+
     FootnotesContent,
     FootnoteContent,
 

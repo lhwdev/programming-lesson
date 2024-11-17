@@ -188,7 +188,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
           if(from.sameParent(to)) return false;
           let index = lineStart;
           tr.insertText("\t", parentOffset + index);
-          while (index <= to.pos) {
+          while(index <= to.pos) {
             if(
               isNewLine(parentText[index])
               && (index + 1 >= parentText.length || !isNewLine(parentText[index + 1]))
@@ -263,7 +263,7 @@ export const CodeBlock = TiptapNode.create<CodeBlockOptions>({
             const selection = state.selection.$from;
             const line = findLine(this.name, selection).content;
             let indentEnd = 0;
-            while (indentEnd < line.length) {
+            while(indentEnd < line.length) {
               if(!line[indentEnd].match(/\s/)) break;
               indentEnd++;
             }
@@ -426,7 +426,7 @@ function findLine(blockName: string, selection: ResolvedPos, separator: (c: stri
   const selectionPos = selection.pos - parentOffset;
   let index = selectionPos;
   const text = parent.textContent;
-  while (index > 0 && !separator(text[index - 1])) {
+  while(index > 0 && !separator(text[index - 1])) {
     index--;
   }
   return {

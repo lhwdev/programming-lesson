@@ -1,11 +1,12 @@
 import clsx from "clsx";
 import classes from "./CodeBlockView.module.css";
 import { Button, Combobox, useCombobox } from "@mantine/core";
-import { createStyleCssForTheme, highlighterCache, languages } from "@sage-ide/common/code/highlight/index.ts";
+import { createStyleCssForTheme, globalCodeRootName, highlighterCache, languages } from "@sage-ide/common/code/highlight/index.ts";
 import { useMemo } from "react";
+import { Grammar } from "shiki";
 
 export interface CodeBlockViewProps {
-  language: string;
+  language: Grammar | { name: string } & Partial<Grammar>;
   setLanguage: (value: string) => void;
   contentRef: (element: HTMLDivElement | null) => void;
 }
@@ -41,7 +42,7 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
               rightSection={<Combobox.Chevron />}
               onClick={() => combobox.toggleDropdown()}
             >
-              {language}
+              {language.name}
             </Button>
           </div>
         </Combobox.Target>
@@ -57,7 +58,7 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
 
       <pre spellCheck={false}>
         <code
-          className={clsx(language && `language-${language}`)}
+          className={clsx(language && `language-${language.name}`, globalCodeRootName, language._rootScopeName)}
         >
           <span ref={contentRef} />
         </code>

@@ -531,6 +531,9 @@ importers:
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.10
+      clsx:
+        specifier: 'catalog:'
+        version: 2.1.1
       react:
         specifier: 'catalog:'
         version: 18.3.1

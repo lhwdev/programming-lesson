@@ -73,7 +73,7 @@ const Pages = {
       { value: "\\nabla", description: "Nabla" },
       { value: "\\partial", description: "편미분" },
       { value: "\\int_{0}^{1}{f(x)\\,dx}", example: "\\int", description: "적분", fontSize: "0.8em" },
-      { value: "\\lim_{x \\to 0}{f(x)}", description: "극한" },
+      { value: "\\lim_{x \\to 0}{f(x)}", example: "\\lim", description: "극한" },
       { value: "\\partial", description: "편미분" },
     ],
   },

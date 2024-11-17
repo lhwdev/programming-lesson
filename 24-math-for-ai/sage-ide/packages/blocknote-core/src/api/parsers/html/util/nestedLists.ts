@@ -90,7 +90,7 @@ function createGroups(element: HTMLElement) {
     blockGroup.setAttribute("data-node-type", "blockGroup");
     blockContainer.append(blockGroup);
 
-    while (
+    while(
       blockContainer.nextElementSibling?.nodeName === "UL"
       || blockContainer.nextElementSibling?.nodeName === "OL"
     ) {

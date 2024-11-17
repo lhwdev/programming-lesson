@@ -6,9 +6,17 @@ import { isNodeInGroup } from "../util/nodeType";
 
 export const BlockGroup = Node.create<{
   domAttributes?: BlockNoteDOMAttributes;
+  nested?: boolean;
 }>({
   name: "blockGroup",
-  group: "blockGroup nestBlockGroup",
+
+  addOptions() {
+    return { nested: true };
+  },
+
+  group() {
+    return this.options.nested ? "anyBlockGroup nestBlockGroup" : "anyBlockGroup";
+  },
   content: "blockContainer+",
 
   parseHTML() {
@@ -20,7 +28,7 @@ export const BlockGroup = Node.create<{
             return false;
           }
 
-          if(element.getAttribute("data-node-type") === "blockGroup") {
+          if(element.getAttribute("data-node-type") === this.name) {
             // Null means the element matches, but we don't want to add any attributes to the node.
             return null;
           }
@@ -39,10 +47,10 @@ export const BlockGroup = Node.create<{
     const blockGroup = document.createElement("div");
     blockGroup.className = mergeCSSClasses(
       "bn-block-group",
-      "bn-nest-block-group",
+      this.options.nested ? "bn-nest-block-group" : null,
       blockGroupHTMLAttributes.class,
     );
-    blockGroup.setAttribute("data-node-type", "blockGroup");
+    blockGroup.setAttribute("data-node-type", this.name);
     for(const [attribute, value] of Object.entries(blockGroupHTMLAttributes)) {
       if(attribute !== "class") {
         blockGroup.setAttribute(attribute, value);
@@ -57,7 +65,7 @@ export const BlockGroup = Node.create<{
 });
 
 export function isBlockGroup(type: NodeType) {
-  return isNodeInGroup(type, "blockGroup");
+  return isNodeInGroup(type, "anyBlockGroup");
 }
 
 export function isNestBlockGroup(type: NodeType) {

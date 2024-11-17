@@ -31,6 +31,7 @@ import { VideoBlock } from "./VideoBlockContent/VideoBlockContent";
 import { AudioBlock } from "./AudioBlockContent/AudioBlockContent";
 import { BlockColumn } from "./BlockColumnContent/BlockColumnContent";
 import { FootnoteReference } from "./FootnoteContent/FootnoteReferenceContent";
+import { Quote } from "./QuoteContent/QuoteContent";
 
 export const defaultBlockSpecs = {
   paragraph: Paragraph,
@@ -44,6 +45,7 @@ export const defaultBlockSpecs = {
   video: VideoBlock,
   audio: AudioBlock,
   blockColumn: BlockColumn,
+  quote: Quote,
 } satisfies BlockSpecs;
 
 export const defaultBlockSchema = getBlockSchemaFromSpecs(defaultBlockSpecs);

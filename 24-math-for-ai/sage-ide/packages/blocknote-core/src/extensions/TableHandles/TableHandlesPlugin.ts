@@ -71,7 +71,7 @@ function getChildIndex(node: Element) {
 // Finds the DOM element corresponding to the table cell that the target element
 // is currently in. If the target element is not in a table cell, returns null.
 function domCellAround(target: Element | null): Element | null {
-  while (target && target.nodeName !== "TD" && target.nodeName !== "TH") {
+  while(target && target.nodeName !== "TD" && target.nodeName !== "TH") {
     target
       = target.classList && target.classList.contains("ProseMirror")
         ? null

@@ -21,7 +21,7 @@ export type BlockNoteDOMAttributes = Partial<{
   [DOMElement in BlockNoteDOMElement]: Record<string, string>;
 }>;
 
-export type FileBlockConfig = {
+export type FileBlockConfig = BlockConfig & {
   type: string;
   readonly propSchema: PropSchema & {
     caption: {
@@ -56,16 +56,14 @@ export type FileBlockConfig = {
 
 // BlockConfig contains the "schema" info about a Block type
 // i.e. what props it supports, what content it supports, etc.
-export type BlockConfig =
-  | {
-    type: string;
-    readonly propSchema: PropSchema;
-    content: "inline" | "none" | "table";
-    blockContent?: boolean;
-    isSelectable?: boolean;
-    isFileBlock?: false;
-  }
-  | FileBlockConfig;
+export type BlockConfig = {
+  type: string;
+  readonly propSchema: PropSchema;
+  content: "inline" | "none" | "table";
+  // hasBlockChildren?: boolean;
+  isSelectable?: boolean;
+  isFileBlock?: boolean;
+};
 
 // Block implementation contains the "implementation" info about a Block
 // such as the functions / Nodes required to render and / or serialize it

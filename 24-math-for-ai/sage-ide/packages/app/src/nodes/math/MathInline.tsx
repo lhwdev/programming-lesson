@@ -91,6 +91,7 @@ export const MathInline = createReactInlineContentSpec(
           opened={opened}
           setOpened={setOpened}
           content={content}
+          error={math.error ?? null}
           onChange={setContent}
           strings={{ placeholder: "E = mc^2" }}
           onEnter={(value, direction) => {

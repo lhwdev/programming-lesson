@@ -1,5 +1,11 @@
-import { HighlighterCore } from "shiki";
+import { Grammar } from "shiki";
 import { INITIAL } from "shiki/textmate";
+
+declare module "shiki" {
+  interface Grammar {
+    _rootScopeName: string;
+  }
+}
 
 export interface Token {
   startIndex: number;
@@ -10,11 +16,16 @@ export interface Token {
 const tokenizationMaxLineLength = 200;
 const tokenizationLineTimeLimit = 10;
 
-export function tokenizeCode(code: string, lang: string, highlighter: HighlighterCore): Token[] {
-  const grammer = highlighter.getLanguage(lang);
+interface TokenizeResult {
+  rootScopeName: string;
+  tokens: Token[];
+}
 
+export function tokenizeCode(code: string, grammar: Grammar): TokenizeResult {
   let stateStack = INITIAL;
   const result: Token[] = [];
+
+  const rootScopeName: string = grammar._rootScopeName;
 
   for(const [lineStart, lineEnd] of splitLines(code)) {
     if(lineStart === lineEnd) continue;
@@ -23,19 +34,22 @@ export function tokenizeCode(code: string, lang: string, highlighter: Highlighte
       continue;
     }
     const line = code.slice(lineStart, lineEnd);
-    const lineResult = grammer.tokenizeLine(line, stateStack, tokenizationLineTimeLimit);
+    const lineResult = grammar.tokenizeLine(line, stateStack, tokenizationLineTimeLimit);
     for(const token of lineResult.tokens) {
       result.push({
         startIndex: lineStart + token.startIndex,
         endIndex: lineStart + token.endIndex,
-        scopes: token.scopes,
+        scopes: token.scopes.filter((scope) => scope != rootScopeName),
       });
     }
 
     stateStack = lineResult.ruleStack;
   }
 
-  return result;
+  return {
+    rootScopeName,
+    tokens: result,
+  };
 }
 
 function* splitLines(text: string) {

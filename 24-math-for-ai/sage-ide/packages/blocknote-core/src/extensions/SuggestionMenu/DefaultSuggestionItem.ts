@@ -1,7 +1,7 @@
 import type { Dictionary } from "../../i18n/dictionary";
 
 export type DefaultSuggestionItem = {
-  key: keyof Dictionary["slash_menu"] | "block_column" | "footnote_reference";
+  key: keyof Dictionary["slash_menu"] | "block_column" | "footnote_reference" | "quote";
   title: string;
   onItemClick: () => void;
   subtext?: string;

@@ -21,6 +21,7 @@ import {
   RiVolumeUpFill,
   RiLayoutColumnLine,
   RiInsertRowBottom,
+  RiQuoteText,
 } from "react-icons/ri";
 import { DefaultReactSuggestionItem } from "./types";
 
@@ -40,6 +41,7 @@ const icons = {
   emoji: RiEmotionFill,
   block_column: RiLayoutColumnLine,
   footnote_reference: RiInsertRowBottom,
+  quote: RiQuoteText,
 };
 
 export function getDefaultReactSlashMenuItems<

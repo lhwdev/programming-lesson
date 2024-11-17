@@ -303,6 +303,20 @@ export function getDefaultSlashMenuItems<
     });
   }
 
+  if(checkDefaultBlockTypeInSchema("quote", editor)) {
+    items.push({
+      onItemClick: () => {
+        insertOrUpdateBlock(editor, {
+          type: "quote",
+        });
+      },
+      key: "quote",
+      title: "인용",
+      aliases: ["quote", "인용"],
+      group: "고급",
+    });
+  }
+
   items.push({
     onItemClick: () => {
       editor.openSuggestionMenu(":", {

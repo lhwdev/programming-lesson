@@ -1,6 +1,8 @@
 import { NodeType } from "prosemirror-model";
 
 export function getNodeGroups(type: NodeType): string[] {
+  if("groups" in type) return type.groups as string[];
+
   let list = type.spec.__groupList;
   if(list) return list;
 

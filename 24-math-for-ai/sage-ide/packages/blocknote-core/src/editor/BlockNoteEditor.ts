@@ -1083,7 +1083,7 @@ export class BlockNoteEditor<
    * Nests the block containing the text cursor into the block above it.
    */
   public nestBlock() {
-    this._tiptapEditor.commands.sinkListItem("blockContainer");
+    this._tiptapEditor.commands.BNSinkListItem();
   }
 
   /**
@@ -1105,7 +1105,7 @@ export class BlockNoteEditor<
    * Lifts the block containing the text cursor out of its parent.
    */
   public unnestBlock() {
-    this._tiptapEditor.commands.liftListItem("blockContainer");
+    this._tiptapEditor.commands.BNLiftListItem();
   }
 
   /**

@@ -19,8 +19,10 @@ const { Span, Anchor, SymbolNode, SvgNode, PathNode, LineNode }: {
   LineNode: Cls<LineNode>;
 } = katex_.__domTree;
 
-type MathResult = { node: ReactNode; error?: undefined } |
-  { node?: undefined; error: katex.ParseError };
+export type MathError = katex.ParseError;
+
+export type MathResult = { node: ReactNode; error?: undefined } |
+  { node?: undefined; error: MathError };
 
 export function katexRenderToNode(tex: string, options: KatexOptions): VirtualNode {
   return katex_.__renderToDomTree(tex, { ...options, output: "htmlAndMathml" } satisfies KatexOptions);

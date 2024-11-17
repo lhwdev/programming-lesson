@@ -4,8 +4,10 @@ import { ResolvedPos, Slice } from "@tiptap/pm/model";
 import { insertOrUpdateBlock } from "@blocknote/core";
 import { AllSelection, Selection, TextSelection } from "@tiptap/pm/state";
 import { Editor, textblockTypeInputRule } from "@tiptap/core";
-import { codeBlockHighlightPlugin } from "./plugins/highlightPlugin";
+import { codeBlockHighlightPlugin, grammarForCodeBlock } from "./plugins/highlightPlugin";
 import { getLanguageFeature, LanguageFeature } from "./LanguageFeature";
+import { useMemo } from "react";
+import { highlighterCache } from "@sage-ide/common/code/highlight/highlight.js";
 
 const options = {
   languageClassPrefix: "language-",
@@ -66,7 +68,7 @@ export const CodeBlock = createReactBlockSpec(
           if(from.sameParent(to)) return false;
           let index = lineStart;
           tr.insertText("\t", parentOffset + index);
-          while (index <= to.pos) {
+          while(index <= to.pos) {
             if(
               isNewLine(parentText[index])
               && (index + 1 >= parentText.length || !isNewLine(parentText[index + 1]))
@@ -123,7 +125,7 @@ export const CodeBlock = createReactBlockSpec(
         // find end of line
         const { text, index, parentOffset } = traverseText(anchor);
         let i = index;
-        while (i < text.length && !text[i].match(/\r|\n/)) i++;
+        while(i < text.length && !text[i].match(/\r|\n/)) i++;
         return insertNewLine(tiptap, getLanguageFeature(codeBlock.attrs.language), parentOffset + i);
       },
 
@@ -218,9 +220,14 @@ export const CodeBlock = createReactBlockSpec(
     ],
 
     render({ block, contentRef }) {
+      const language = block.props.language;
+      const grammar = useMemo(
+        () => highlighterCache && grammarForCodeBlock(language, highlighterCache),
+        [highlighterCache, language],
+      );
       return (
         <CodeBlockView
-          language={block.props.language}
+          language={grammar ?? { name: language }}
           setLanguage={(language) => block.props = { ...block.props, language }}
           contentRef={contentRef}
         />
@@ -280,7 +287,7 @@ function findLine(selection: ResolvedPos, separator: (c: string) => boolean = (c
   const selectionPos = selection.pos - parentOffset;
   let index = selectionPos;
   const text = parent.textContent;
-  while (index > 0 && !separator(text[index - 1])) {
+  while(index > 0 && !separator(text[index - 1])) {
     index--;
   }
   return {
@@ -303,7 +310,7 @@ function insertNewLine(tiptap: Editor, feature: LanguageFeature, position?: numb
     const selection = state.selection.$anchor;
     const line = findLine(selection).content;
     let indentEnd = 0;
-    while (indentEnd < line.length) {
+    while(indentEnd < line.length) {
       if(!line[indentEnd].match(/\s/)) break;
       indentEnd++;
     }

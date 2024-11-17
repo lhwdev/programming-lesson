@@ -18,6 +18,7 @@ interface Options {
   leaveAction?: (direction?: "left" | "right") => void;
   onChange?: (content: string) => void;
   editorRef?: MutableRefObject<Editor | undefined>;
+  extensions?: Extensions;
 }
 
 function initial(content: string, language: string): Content {
@@ -80,6 +81,7 @@ export function SimpleCodeBlockEditor({ value, language, options: options_ = {},
           },
         })],
       }),
+      ...options.extensions ?? [],
     ].filter((t) => t) as Extensions,
     editorProps,
     onCreate({ editor }) {
