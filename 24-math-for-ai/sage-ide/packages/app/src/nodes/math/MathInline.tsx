@@ -60,6 +60,9 @@ export const MathInline = createReactInlineContentSpec(
       const [closeDirection, setCloseDirection] = useState<"left" | "right" | null>(null);
       const [content, setContent] = useState(props.value);
       const opened = _opened || props.opened;
+
+      const math = useMathView(opened ? content : props.value, { editing: opened, displayMode: false });
+
       const setOpened = (value: boolean, direction?: "left" | "right") => {
         if(value) {
           setContent(props.value);
@@ -68,7 +71,11 @@ export const MathInline = createReactInlineContentSpec(
             // Remove current node
             node.remove();
           } else {
-            node.props = { ...node.props, opened: false, value: content };
+            if(!math.error) {
+              node.props = { ...node.props, opened: false, value: content };
+            } else {
+              node.props = { ...node.props, opened: false };
+            }
             setCloseDirection(direction ?? "right");
           }
         }
@@ -83,8 +90,6 @@ export const MathInline = createReactInlineContentSpec(
           setCloseDirection(null);
         }
       }, [closeDirection]);
-
-      const math = useMathView(opened ? content : props.value, { displayMode: false });
 
       return (
         <MathInputDropdown

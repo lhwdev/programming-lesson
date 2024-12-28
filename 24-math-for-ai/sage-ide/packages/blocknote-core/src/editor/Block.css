@@ -175,7 +175,7 @@ NESTED BLOCKS
 }
 
 .bn-generic-list-item::before {
-  width: 24px;
+  flex: 0 0 24px;
   text-align: center;
 }
 
@@ -470,7 +470,7 @@ sup:has(> .bn-footnote-reference) {
 .bn-block-content[data-content-type="footnote"]::before {
   counter-increment: footnote-index;
   content: counter(footnote-index) ".";
-  width: 24px;
+  flex: 0 0 24px;
   text-align: center;
 }
 

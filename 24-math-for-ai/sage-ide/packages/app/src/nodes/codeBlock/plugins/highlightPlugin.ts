@@ -1,14 +1,16 @@
-import { classNameForScopeUsage, highlighterCache, tokenizeCode } from "@sage-ide/common/code/highlight/index.ts";
+import { classNameForScopeUsage, getHighlighter, getLanguage, highlighterCache, Languages, tokenizeCode } from "@sage-ide/common/code/highlight/index.ts";
 import { findChildren } from "@tiptap/core";
 import { Node, NodeType } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import { Grammar, HighlighterCore } from "shiki/core";
+import { HighlighterCore } from "shiki/core";
 
 const styleElement = document.createElement("style");
 document.body.appendChild(styleElement);
 
 export function codeBlockHighlightPlugin({ type }: { type: NodeType }) {
+  getHighlighter();
+
   return new Plugin<DecorationSet>({
     key: new PluginKey("codeBlock-highlight"),
 
@@ -62,24 +64,24 @@ export function codeBlockHighlightPlugin({ type }: { type: NodeType }) {
   });
 }
 
-export function grammarForCodeBlock(language: string, highlighter: HighlighterCore): Grammar {
-  language = language || "plain";
-  const languages = highlighter.getLoadedLanguages();
+export function grammarForCodeBlock(language: string, highlighter: HighlighterCore) {
+  const info = Languages.find(language);
 
-  const hasLanguage = language && (languages.includes(language) || language === "plain" || language === "text");
-  if(!hasLanguage) {
-    console.error(language, languages);
-    throw new Error("no language");
+  if(!info) {
+    throw new Error(`no language: ${language}`);
   }
 
-  return highlighter.getLanguage(language);
+  return getLanguage(highlighter, info);
 }
 
 function getDecorations(doc: Node, type: NodeType, highlighter: HighlighterCore) {
   const decorations: Decoration[] = [];
 
   findChildren(doc, (node) => node.type === type).forEach((block) => {
-    const grammar = grammarForCodeBlock(block.node.attrs.language, highlighter);
+    const result = grammarForCodeBlock(block.node.attrs.language, highlighter);
+    if(!("grammar" in result)) return;
+    const grammar = result.grammar;
+
     const offset = block.pos + 1;
 
     const { rootScopeName, tokens } = tokenizeCode(block.node.textContent, grammar);

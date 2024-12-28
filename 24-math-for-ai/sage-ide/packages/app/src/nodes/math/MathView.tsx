@@ -1,5 +1,5 @@
 import katex, { KatexOptions } from "katex";
-import React, { CSSProperties, memo, ReactNode, useMemo } from "react";
+import React, { CSSProperties, memo, ReactNode, useEffect, useMemo, useRef } from "react";
 import "./MathView.css";
 import { Text } from "@mantine/core";
 import { RiSquareRoot } from "react-icons/ri";
@@ -19,22 +19,30 @@ const { Span, Anchor, SymbolNode, SvgNode, PathNode, LineNode }: {
   LineNode: Cls<LineNode>;
 } = katex_.__domTree;
 
-export type MathError = katex.ParseError;
+// @types/katex katex.ParseError is errorprone
+export interface MathError extends Error {
+  name: "ParseError";
 
-export type MathResult = { node: ReactNode; error?: undefined } |
-  { node?: undefined; error: MathError };
-
-export function katexRenderToNode(tex: string, options: KatexOptions): VirtualNode {
-  return katex_.__renderToDomTree(tex, { ...options, output: "htmlAndMathml" } satisfies KatexOptions);
+  position: number;
+  length: number;
+  rawMessage: string;
 }
 
-const EmptyTex = <div />;
+export interface MathViewOptions extends KatexOptions {
+  editing?: boolean;
+}
 
-export function useMathView(tex: string, options: KatexOptions): MathResult {
-  return useMemo(() => {
-    if(tex === "") return { node: EmptyTex };
+export type MathResult = { node?: ReactNode; error?: MathError };
+
+export function katexRenderToNode(tex: string, options: KatexOptions): VirtualNode {
+  return katex_.__renderToDomTree(tex, { ...options } satisfies KatexOptions);
+}
+
+export function useMathView(tex: string, { editing, ...options }: MathViewOptions): MathResult {
+  const previous = useMemo<{ current: MathResult | null }>(() => ({ current: {} }), []);
+  const result = useMemo(() => {
+    if(tex === "") return {};
     try {
-      // TODO: 'output: "html"': support mathml for accessibility and paste-ability?
       const tree = katexRenderToNode(tex, options);
       const result = <RootKatexNode node={tree} />;
       const RootNode = options.displayMode ? "div" : "span";
@@ -47,17 +55,34 @@ export function useMathView(tex: string, options: KatexOptions): MathResult {
       };
     } catch (e) {
       if(e instanceof katex.ParseError) {
-        return { error: e };
+        return { error: e as MathError };
       } else {
         throw e;
       }
     }
   }, [tex, options]);
+
+  useEffect(() => {
+    if(!editing) {
+      previous.current = null;
+    } else {
+      if(result.node) previous.current = result;
+    }
+  }, [editing && result.node]);
+
+  if(editing && !result.node) {
+    const value = previous.current;
+    if(value) return {
+      node: value.node,
+      error: result.error,
+    };
+  }
+  return result;
 }
 
 export function MathView({ result }: { result: MathResult }) {
-  if(result.node) {
-    if(result.node === EmptyTex) { // tex === ""
+  if(result.node || !result.error) {
+    if(!result.node) { // tex === ""
       return <MathPlaceholder type="default">새로운 수학공식</MathPlaceholder>;
     }
     return result.node;
@@ -104,81 +129,57 @@ function toNode(tag: string, node: HtmlDomNode) {
 
 export const RootKatexNode = memo(KatexNode);
 
-export function KatexNode({ node }: { node: VirtualNode }) {
-  if(node instanceof Span) {
-    return toNode("span", node);
-  }
-  if(node instanceof Anchor) {
-    return toNode("a", node);
-  }
-  // Only used for external image direction (which is blocked by default)
-  // if(node instanceof Img) {
-  //   return (
-  //     <img
-  //       src={node.src}
-  //       alt={node.alt}
-  //       className="mord"
-  //       style={node.style}
-  //     />
-  //   );
-  // }
-  if(node instanceof SymbolNode) {
-    return (
-      <span
-        className={clsx(...node.classes)}
-        style={{ marginRight: node.italic > 0 ? makeEm(node.italic) : 0, ...node.style }}
-      >
-        {node.text}
-      </span>
-    );
-  }
-  if(node instanceof SvgNode) {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" {...node.attributes}>
-        {mapChildren(node.children)}
-      </svg>
-    );
-  }
-  if(node instanceof PathNode) {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+const ParseInstanceMap = new Map<Function, (node: any) => ReactNode>([
+  [Span, (node: Span) => toNode("span", node)],
+  [Anchor, (node: Anchor) => toNode("span", node)],
+  [SymbolNode, (node: SymbolNode) => (
+    <span
+      className={clsx(...node.classes)}
+      style={{ marginRight: node.italic > 0 ? makeEm(node.italic) : 0, ...node.style }}
+    >
+      {node.text}
+    </span>
+  )],
+  [SvgNode, (node: SvgNode) => (
+    <svg xmlns="http://www.w3.org/2000/svg" {...node.attributes}>
+      {mapChildren(node.children)}
+    </svg>
+  )],
+  [PathNode, (node: SvgNode) => {
     const dom = node.toNode() as SVGPathElement;
     return <path d={dom.getAttribute("d")!} />;
-  }
-  if(node instanceof LineNode) {
-    return <line {...node.attributes} />;
-  }
-
-  const name = node.constructor.name;
-  // Common tree
-  if(name === "DocumentFragment") {
-    const n = node as DocumentFragment;
-    return <>{mapChildren(n.children)}</>;
-  }
-
-  // MathML node
-  if(name === "MathNode") {
-    const n = node as MathNode;
-    const Tag = n.type as MathNodeType;
+  }],
+  [LineNode, (node: LineNode) => <line {...node.attributes} />],
+]);
+const ParseNameMap = new Map<string, (node: any) => ReactNode>([
+  ["DocumentFragment", (node: DocumentFragment) => <>{mapChildren(node.children)}</>],
+  ["MathNode", (node: MathNode) => {
+    const Tag = node.type as MathNodeType;
     return (
       <Tag
         xmlns={Tag === "math" ? "http://www.w3.org/1998/Math/MathML" : undefined}
-        {...n.attributes}
-        className={clsx(...n.classes)}
+        {...node.attributes}
+        className={clsx(...node.classes)}
       >
-        {mapChildren(n.children)}
+        {mapChildren(node.children)}
       </Tag>
     );
-  }
-  if(name === "TextNode") {
-    return (node as TextNode).text;
-  }
-  if(name === "SpaceNode") {
-    const n = node as SpaceNode;
-    if(n.character) {
-      return n.character;
+  }],
+  ["TextNode", (node: TextNode) => node.text],
+  ["SpaceNode", (node: SpaceNode) => {
+    if(node.character) {
+      return node.character;
     } else {
-      return <mspace width={makeEm(n.width)} />;
+      return <mspace width={makeEm(node.width)} />;
     }
-  }
+  }],
+]);
+
+export function KatexNode({ node }: { node: VirtualNode }) {
+  const type = node.constructor;
+  const instance = ParseInstanceMap.get(type) ?? ParseNameMap.get(type.name);
+  if(instance) return instance(node);
 
   console.error("unknown node", node);
   throw new Error(`unknown node ${node.constructor?.name ?? node}`);
@@ -219,13 +220,12 @@ interface Anchor extends HtmlDomNode {
   attributes: Record<string, string>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Img extends VirtualNode {
-  src: string;
-  alt: string;
-  style: CSSProperties;
-  classes: string[];
-}
+// interface Img extends VirtualNode {
+//   src: string;
+//   alt: string;
+//   style: CSSProperties;
+//   classes: string[];
+// }
 
 interface SymbolNode extends HtmlDomNode {
   text: string;

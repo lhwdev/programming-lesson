@@ -1,13 +1,13 @@
 .code-block-placeholder {
   position: absolute;
   font-size: 16px;
-  margin-top: 6px; /* hand-crafted with devtools; is this right? IDK */
+  margin-top: 3px; /* hand-crafted with devtools; is this right? IDK */
   display: none;
   pointer-events: none;
   user-select: none;
   color: var(--mantine-color-placeholder);
 }
 
-.ex-code-block-editor:not(:has(code.pm-code-block:has(span))) + .code-block-placeholder {
+.ex-code-block-editor:has(br.ProseMirror-trailingBreak) + .code-block-placeholder {
   display: block;
 }

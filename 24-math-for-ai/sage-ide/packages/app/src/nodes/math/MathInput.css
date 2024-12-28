@@ -3,7 +3,8 @@
 .bn-ex-math-input {
   min-height: 1em;
   font-family: iawriter-mono, Nitti, Menlo, Courier, monospace;
-  font-size: var(--mantine-font-size-sm)
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.4;
 }
 
 .bn-ex-math-input > .ProseMirror {

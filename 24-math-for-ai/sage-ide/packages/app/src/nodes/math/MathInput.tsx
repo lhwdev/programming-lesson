@@ -45,21 +45,15 @@ export function MathInput({ content, error, strings, onChange, onSubmit, classNa
                   decorations(state) {
                     const error = currentError.current;
                     if(!error) return DecorationSet.empty;
-                    const text = state.doc.textContent;
-                    const pos = error.position;
-                    let from = pos;
-                    let to = pos;
-                    for(; from >= 1; from--) {
-                      if(!text[from].match(/\w/)) break;
-                    }
-                    for(; to < text.length - 1; to++) {
-                      if(!text[to].match(/\w/)) break;
-                    }
-                    console.log(from, to);
 
-                    const decoration = Decoration.inline(from, to + 1, {
-                      style: "text-decoration: red wavy underline;",
-                    });
+                    const decoration = Decoration.inline(
+                      error.position + 1,
+                      error.position + error.length + 1,
+                      {
+                        nodeName: "span",
+                        style: "text-decoration: red wavy underline;",
+                      },
+                    );
                     return DecorationSet.create(state.doc, [decoration]);
                   },
                 },
@@ -70,6 +64,7 @@ export function MathInput({ content, error, strings, onChange, onSubmit, classNa
         ],
       }}
       className={clsx("bn-ex-math-input", className)}
+      spellCheck={false}
       editorProps={{ attributes: { "data-autofocus": "" } }}
     />
   );

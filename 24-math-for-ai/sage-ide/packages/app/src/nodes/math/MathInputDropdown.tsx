@@ -72,6 +72,7 @@ function DropdownContent({ content, error, onChange, strings, onEnter }: {
             <Anchor c="blue" onClick={() => setHintsOpen((v) => !v)}>LaTeX 문법</Anchor>
             에 맞게 수식 입력
           </Text>
+
           <Group align="baseline" wrap="nowrap">
             <MathInput
               content={content}
@@ -84,6 +85,10 @@ function DropdownContent({ content, error, onChange, strings, onEnter }: {
             />
             <Button size="sm" h="32px" p="0 14px" onClick={() => onEnter(content)}>완료</Button>
           </Group>
+
+          {error && (
+            <Text size="xs" c="red" lh="1.2" mt="6px">{error.rawMessage}</Text>
+          )}
         </Stack>
       </Popover.Target>
       <Popover.Dropdown p="0">

@@ -1,24 +1,30 @@
 import clsx from "clsx";
 import classes from "./CodeBlockView.module.css";
 import { Button, Combobox, useCombobox } from "@mantine/core";
-import { createStyleCssForTheme, globalCodeRootName, highlighterCache, languages } from "@sage-ide/common/code/highlight/index.ts";
-import { useMemo } from "react";
+import { createStyleCssForTheme, getHighlighter, getLanguage, globalCodeRootName, highlighterCache, LanguageInfo, Languages } from "@sage-ide/common/code/highlight/index.ts";
+import { useMemo, useState } from "react";
 import { Grammar } from "shiki";
 
 export interface CodeBlockViewProps {
-  language: Grammar | { name: string } & Partial<Grammar>;
+  language: LanguageInfo;
+  grammar: Grammar | null;
   setLanguage: (value: string) => void;
   contentRef: (element: HTMLDivElement | null) => void;
 }
 
-export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockViewProps) {
-  const combobox = useCombobox({});
-  const languageOptions = useMemo(() => languages.map((lang) => (
+export function CodeBlockView({ language, grammar, setLanguage, contentRef }: CodeBlockViewProps) {
+  const [search, setSearch] = useState("");
+  const combobox = useCombobox({
+    onDropdownOpen() {
+      setSearch("");
+    },
+  });
+  const languageOptions = useMemo(() => Languages.all.map((lang) => (
     <Combobox.Option
-      key={lang}
-      value={lang}
+      key={lang.id}
+      value={lang.id}
     >
-      {lang}
+      {lang.name}
     </Combobox.Option>
   )), []);
 
@@ -28,10 +34,16 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
         store={combobox}
         onOptionSubmit={(lang) => {
           setLanguage(lang);
-          combobox.closeDropdown();
+          (async () => {
+            const info = Languages.find(lang);
+            if(!info) return;
+            await getLanguage(await getHighlighter(), info);
+            combobox.closeDropdown();
+          })();
         }}
         width="max-content"
         position="bottom-start"
+        dropdownPadding={0}
       >
         <Combobox.Target>
           <div className={classes.buttons} data-retain={combobox.dropdownOpened} contentEditable={false}>
@@ -47,18 +59,26 @@ export function CodeBlockView({ language, setLanguage, contentRef }: CodeBlockVi
           </div>
         </Combobox.Target>
         <Combobox.Dropdown>
-          {languageOptions}
+          <Combobox.Search
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            placeholder="언어 검색"
+          />
+          <Combobox.Options p={4} mah={600} style={{ overflowY: "auto" }}>
+            {languageOptions}
+          </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
 
-      <style dangerouslySetInnerHTML={{ __html: useMemo(() =>
-        highlighterCache ? createStyleCssForTheme(highlighterCache.getTheme("vitesse-light")) : ""
-      , [highlighterCache]) }}
+      <style dangerouslySetInnerHTML={{ __html: useMemo(
+        () => highlighterCache ? createStyleCssForTheme(highlighterCache.getTheme("vitesse-light")) : "",
+        [highlighterCache],
+      ) }}
       />
 
       <pre spellCheck={false}>
         <code
-          className={clsx(language && `language-${language.name}`, globalCodeRootName, language._rootScopeName)}
+          className={clsx(language && `language-${language.name}`, globalCodeRootName, grammar?._rootScopeName)}
         >
           <span ref={contentRef} />
         </code>

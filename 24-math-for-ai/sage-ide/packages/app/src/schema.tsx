@@ -1,11 +1,12 @@
 import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, defaultStyleSpecs, insertOrUpdateBlock } from "@blocknote/core";
-import { RiBox1Fill, RiCalculatorFill, RiCodeFill } from "react-icons/ri";
+import { RiBox1Fill, RiCalculatorFill, RiCalculatorLine, RiCodeFill } from "react-icons/ri";
 import { Alert } from "./nodes/Alert";
 import { FormattingToolbar, getDefaultReactSlashMenuItems, getFormattingToolbarItems, useBlockNoteEditor, useComponentsContext } from "@blocknote/react";
 import { MathInline } from "./nodes/math/MathInline";
 import { CodeInline } from "./nodes/codeInline/CodeInline";
 import { ReactNode } from "react";
 import { CodeBlock } from "./nodes/codeBlock/CodeBlock";
+import { MathBlock } from "./nodes/math/MathBlock";
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
@@ -13,6 +14,7 @@ export const schema = BlockNoteSchema.create({
 
     alert: Alert,
     codeBlock: CodeBlock,
+    mathBlock: MathBlock,
   },
   inlineContentSpecs: {
     ...defaultInlineContentSpecs,
@@ -64,6 +66,22 @@ export function allSlashMenuItems(editor: typeof schema.BlockNoteEditor) {
         "수식",
         "수학",
         "math",
+        "latex",
+        "katex",
+      ],
+      group: group.advanced,
+      icon: <RiCalculatorLine />,
+    },
+    {
+      title: "수식 블럭",
+      subtext: "수식 상자를 추가합니다.",
+      onItemClick: () => {
+        insertOrUpdateBlock(editor, { type: "mathBlock" });
+      },
+      aliases: [
+        "수식 블럭",
+        "수학",
+        "mathBlock",
         "latex",
         "katex",
       ],

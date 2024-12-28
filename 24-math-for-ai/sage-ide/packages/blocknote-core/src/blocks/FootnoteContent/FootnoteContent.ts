@@ -18,6 +18,8 @@ export interface FootnoteOptions {
   HTMLAttributes: Record<string, any>;
 }
 
+const ClassName = "bn-footnote";
+
 export const FootnoteContent = Node.create<FootnoteOptions>({
   name: "footnote",
   content: "inline*",
@@ -45,6 +47,8 @@ export const FootnoteContent = Node.create<FootnoteOptions>({
       {
         tag: "div",
         getAttrs(node) {
+          if(!node.classList.contains(ClassName)) return false;
+
           const id = node.getAttribute("data-id");
           if(id) {
             return {
@@ -53,7 +57,7 @@ export const FootnoteContent = Node.create<FootnoteOptions>({
           }
           return false;
         },
-        priority: 1000,
+        priority: -10,
       },
     ];
   },
@@ -62,7 +66,7 @@ export const FootnoteContent = Node.create<FootnoteOptions>({
     return createDefaultBlockDOMOutputSpec(
       this.name,
       "p",
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { class: ClassName }),
       {},
     );
   },

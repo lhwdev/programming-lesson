@@ -4,10 +4,11 @@ import { ResolvedPos, Slice } from "@tiptap/pm/model";
 import { insertOrUpdateBlock } from "@blocknote/core";
 import { AllSelection, Selection, TextSelection } from "@tiptap/pm/state";
 import { Editor, textblockTypeInputRule } from "@tiptap/core";
-import { codeBlockHighlightPlugin, grammarForCodeBlock } from "./plugins/highlightPlugin";
+import { codeBlockHighlightPlugin } from "./plugins/highlightPlugin";
 import { getLanguageFeature, LanguageFeature } from "./LanguageFeature";
-import { useMemo } from "react";
-import { highlighterCache } from "@sage-ide/common/code/highlight/highlight.js";
+import { useEffect, useState } from "react";
+import { getHighlighter, getLanguage, Languages } from "@sage-ide/common/code/highlight/highlight.js";
+import { Grammar } from "shiki";
 
 const options = {
   languageClassPrefix: "language-",
@@ -221,13 +222,21 @@ export const CodeBlock = createReactBlockSpec(
 
     render({ block, contentRef }) {
       const language = block.props.language;
-      const grammar = useMemo(
-        () => highlighterCache && grammarForCodeBlock(language, highlighterCache),
-        [highlighterCache, language],
-      );
+      const languageInfo = Languages.get(language) ?? Languages.get("plain")!;
+      const [grammar, setGrammar] = useState<Grammar | null>(null);
+
+      useEffect(() => {
+        (async () => {
+          const highlighter = await getHighlighter();
+          const { grammar } = await getLanguage(highlighter, languageInfo);
+          setGrammar(grammar);
+        })();
+      }, [languageInfo]);
+
       return (
         <CodeBlockView
-          language={grammar ?? { name: language }}
+          language={languageInfo}
+          grammar={grammar}
           setLanguage={(language) => block.props = { ...block.props, language }}
           contentRef={contentRef}
         />
