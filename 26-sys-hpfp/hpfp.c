@@ -66,12 +66,16 @@ hpfp int_converter(int input)
   int bitWidth = (8 * sizeof(unsigned int) - 1) - __builtin_clz(value);
   // same as: int bitWidth = 31; while(((value >> bitWidth) & 0b1) == 0) bitWidth--;
 
+  int frac = bitWidth + HPFP_BIAS;
+  if (frac >= HPFP_EXP_SPECIAL)
+    return (sign << HPFP_SIGN_OFFSET) | HPFP_POSITIVE_INFINITY;
+
   if (bitWidth > HPFP_FRAC_WIDTH)
     value = value >> (bitWidth - HPFP_FRAC_WIDTH);
   else
     value = value << (HPFP_FRAC_WIDTH - bitWidth);
 
-  return (sign << HPFP_SIGN_OFFSET) | ((bitWidth + HPFP_BIAS) << HPFP_EXP_OFFSET) | (value & HPFP_FRAC_MASK);
+  return (sign << HPFP_SIGN_OFFSET) | (frac << HPFP_EXP_OFFSET) | (value & HPFP_FRAC_MASK);
 }
 
 int hpfp_to_int_converter(hpfp input)
@@ -130,15 +134,20 @@ hpfp float_converter(float input)
       return HPFP_NAN;
   }
 
-  int E = (int)exp - FLOAT_BIAS;
-
-  int hpfp_exp = E + (int)HPFP_BIAS;
+  int hpfp_exp = (int)exp - FLOAT_BIAS + HPFP_BIAS;
 
   if (hpfp_exp >= HPFP_EXP_SPECIAL) // overflow -> +-Inf
     return signFlag | HPFP_POSITIVE_INFINITY;
 
-  if (hpfp_exp < 0) // underflow -> +-0
-    return signFlag;
+  if (hpfp_exp <= 0) // underflow -> denormalized (including 0)
+  {
+    int shift = 23 - HPFP_FRAC_WIDTH - hpfp_exp;
+    if (shift >= 32)
+      return signFlag; // +-0
+
+    frac |= (exp != 0) << 23;
+    return signFlag | ((frac >> shift) & HPFP_FRAC_MASK);
+  }
 
   return signFlag |
          ((unsigned int)hpfp_exp << HPFP_EXP_OFFSET) |
@@ -151,15 +160,39 @@ float hpfp_to_float_converter(hpfp input)
   unsigned int exp = (input >> HPFP_EXP_OFFSET) & HPFP_EXP_MASK;
   unsigned int frac = input & HPFP_FRAC_MASK;
 
+  union float_int fi;
+
   if (exp == HPFP_EXP_SPECIAL)
   {
-    return (sign << 31) | (0b11111111 << 23) | frac;
+    fi.u = (sign << 31) | (0b11111111 << 23) | frac;
+    return fi.f;
   }
 
-  exp += FLOAT_BIAS - HPFP_BIAS;
-  frac <<= 23 - HPFP_FRAC_WIDTH;
+  if (exp == 0)
+  { // denormalized hpfp
+    if (frac == 0)
+    {
+      fi.u = (sign << 31);
+      return fi.f;
+    }
 
-  union float_int fi;
+    // index of first leading(most significant) 1, starting from lsb
+    // NOTE: __builtin_clz returns the number of leading 0-bits (from msb)
+    int leadingLeft = __builtin_clz(frac);
+    int leadingOffset = HPFP_FRAC_WIDTH - 1 - leadingLeft;
+
+    // 1. remove leading 1 (as normalized numbers already includes)
+    frac &= (1 << leadingOffset) - 1;
+
+    // bit just right(less significant) of leading should be at 22 (23th bit)
+    int shift = 22 - leadingOffset;
+    frac <<= shift;
+    exp = FLOAT_BIAS - HPFP_BIAS - leadingLeft;
+  } else {
+    exp += FLOAT_BIAS - HPFP_BIAS;
+    frac <<= 23 - HPFP_FRAC_WIDTH;
+  }
+  
   fi.u = (sign << 31) | (exp << 23) | frac;
   return fi.f;
 }
@@ -479,12 +512,17 @@ char *comparison_function(hpfp a, hpfp b)
   if (signA != signB)
     return signA ? "<" : ">";
 
-  if (expA != expB)
+  if (expA != expB) {
+    if (signA == 1)
+      return expA > expB ? "<" : ">";
     return expA > expB ? ">" : "<";
+  }
 
   if (fracA == fracB)
     return "=";
 
+  if (signA == 1)
+    return fracA > fracB ? "<" : ">";
   return fracA > fracB ? ">" : "<";
 }
 
