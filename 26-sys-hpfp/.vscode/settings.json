@@ -1,0 +1,11 @@
+{
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/lhwdev/skku/programming-lesson/26-sys-hpfp",
+      "binaryPath": "/home/lhwdev/skku/programming-lesson/26-sys-hpfp/hw1",
+      "binaryArgs": [],
+      "MIMode": "gdb"
+    }
+  ],
+  "editor.formatOnSave": true
+}
