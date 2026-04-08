@@ -46,7 +46,6 @@
 
 hpfp int_converter(int input)
 {
-  // TODO: overflow
   unsigned int value = (unsigned int)input;
 
   // special case for zero
@@ -55,10 +54,7 @@ hpfp int_converter(int input)
 
   int sign = MSB_OF_UINT(value);
   if (sign != 0)
-  {
-    // -value but implemented for unsigned int
-    value = ~value + 1;
-  }
+    value = -value;
 
   // count of effective frac bits, except for leading 1
   // NOTE: __builtin_clz returns the number of leading 0-bits;
@@ -66,8 +62,8 @@ hpfp int_converter(int input)
   int bitWidth = (8 * sizeof(unsigned int) - 1) - __builtin_clz(value);
   // same as: int bitWidth = 31; while(((value >> bitWidth) & 0b1) == 0) bitWidth--;
 
-  int frac = bitWidth + HPFP_BIAS;
-  if (frac >= HPFP_EXP_SPECIAL)
+  int exp = bitWidth + HPFP_BIAS;
+  if (exp >= HPFP_EXP_SPECIAL)
     return (sign << HPFP_SIGN_OFFSET) | HPFP_POSITIVE_INFINITY;
 
   if (bitWidth > HPFP_FRAC_WIDTH)
@@ -75,7 +71,7 @@ hpfp int_converter(int input)
   else
     value = value << (HPFP_FRAC_WIDTH - bitWidth);
 
-  return (sign << HPFP_SIGN_OFFSET) | (frac << HPFP_EXP_OFFSET) | (value & HPFP_FRAC_MASK);
+  return (sign << HPFP_SIGN_OFFSET) | (exp << HPFP_EXP_OFFSET) | (value & HPFP_FRAC_MASK);
 }
 
 int hpfp_to_int_converter(hpfp input)
@@ -86,7 +82,7 @@ int hpfp_to_int_converter(hpfp input)
 
   if (exp == HPFP_EXP_SPECIAL)
   {
-    if (frac == 0 && sign == 0)
+    if (frac == 0 && sign == 1)
       return INT_MAX;
     else
       return INT_MIN;
@@ -95,16 +91,14 @@ int hpfp_to_int_converter(hpfp input)
   if (exp < HPFP_BIAS)
     return 0;
 
-  // not denormalized, as already filterex where exp < HPFP_BIAS
+  // not denormalized, as already filtered where exp < HPFP_BIAS
   frac |= 0b1 << HPFP_FRAC_WIDTH;
 
-  if (exp >= HPFP_BIAS + HPFP_FRAC_WIDTH)
-    return sign * (int)(frac << (exp - (HPFP_BIAS + HPFP_FRAC_WIDTH)));
+  if (exp >= (HPFP_BIAS + HPFP_FRAC_WIDTH))
+    frac <<= exp - (HPFP_BIAS + HPFP_FRAC_WIDTH);
   else
-  {
-    unsigned int result = frac >> (HPFP_BIAS + HPFP_FRAC_WIDTH - exp);
-    return sign == 1 ? result : -result;
-  }
+    frac >>= (HPFP_BIAS + HPFP_FRAC_WIDTH) - exp;
+  return sign * frac;
 }
 
 #define FLOAT_BIAS 127
@@ -142,10 +136,10 @@ hpfp float_converter(float input)
   if (hpfp_exp <= 0) // underflow -> denormalized (including 0)
   {
     int shift = 23 - HPFP_FRAC_WIDTH - hpfp_exp;
-    if (shift >= 32)
+    if (shift >= 32)   // includes case of previously denormalized (exp == 0)
       return signFlag; // +-0
 
-    frac |= (exp != 0) << 23;
+    frac |= (exp != 0) << 22;
     return signFlag | ((frac >> shift) & HPFP_FRAC_MASK);
   }
 
@@ -164,12 +158,12 @@ float hpfp_to_float_converter(hpfp input)
 
   if (exp == HPFP_EXP_SPECIAL)
   {
-    fi.u = (sign << 31) | (0b11111111 << 23) | frac;
+    fi.u = (sign << 31) | (0b11111111 << 23) | (frac != 0);
     return fi.f;
   }
 
   if (exp == 0)
-  { // denormalized hpfp
+  { // denormalized hpfp: 100% maps to normalized float
     if (frac == 0)
     {
       fi.u = (sign << 31);
@@ -178,21 +172,22 @@ float hpfp_to_float_converter(hpfp input)
 
     // index of first leading(most significant) 1, starting from lsb
     // NOTE: __builtin_clz returns the number of leading 0-bits (from msb)
-    int leadingLeft = __builtin_clz(frac);
+    int leadingLeft = __builtin_clz(frac) - 8 * sizeof(int) + HPFP_FRAC_WIDTH; // regarding frac as short
     int leadingOffset = HPFP_FRAC_WIDTH - 1 - leadingLeft;
 
     // 1. remove leading 1 (as normalized numbers already includes)
     frac &= (1 << leadingOffset) - 1;
 
     // bit just right(less significant) of leading should be at 22 (23th bit)
-    int shift = 22 - leadingOffset;
-    frac <<= shift;
+    frac <<= 22 - leadingOffset;
     exp = FLOAT_BIAS - HPFP_BIAS - leadingLeft;
-  } else {
+  }
+  else
+  {
     exp += FLOAT_BIAS - HPFP_BIAS;
     frac <<= 23 - HPFP_FRAC_WIDTH;
   }
-  
+
   fi.u = (sign << 31) | (exp << 23) | frac;
   return fi.f;
 }
@@ -204,20 +199,32 @@ hpfp addition_function(hpfp a, hpfp b)
   if ((a & HPFP_EXCEPT_SIGN_MASK) == 0 && (b & HPFP_EXCEPT_SIGN_MASK) == 0)
     return a & b; // sign = signA & signB
 
-  // ensure expA >= expB, mantinaA >= mantinaB
+  unsigned int expA = (a >> HPFP_EXP_OFFSET) & HPFP_EXP_MASK;
+  unsigned int expB = (b >> HPFP_EXP_OFFSET) & HPFP_EXP_MASK;
+  // get E; if denormalized number, add 1
+  int EA = ((int)expA) + ((int)(expA == 0)) - HPFP_BIAS;
+  int EB = ((int)expB) + ((int)(expB == 0)) - HPFP_BIAS;
+
+  // ensure expA > expB || (expA == expB && mantinaA >= mantinaB)
   if ((a & HPFP_EXCEPT_SIGN_MASK) < (b & HPFP_EXCEPT_SIGN_MASK))
   {
-    hpfp temp = a;
+    hpfp temp1 = a;
     a = b;
-    b = temp;
+    b = temp1;
+
+    int temp2 = expA;
+    expA = expB;
+    expB = temp2;
+
+    temp2 = EA;
+    EA = EB;
+    EB = temp2;
   }
 
   unsigned int signA = a >> HPFP_SIGN_OFFSET;
-  unsigned int expA = (a >> HPFP_EXP_OFFSET) & HPFP_EXP_MASK;
   unsigned int fracA = a & HPFP_FRAC_MASK;
 
   unsigned int signB = b >> HPFP_SIGN_OFFSET;
-  unsigned int expB = (b >> HPFP_EXP_OFFSET) & HPFP_EXP_MASK;
   unsigned int fracB = b & HPFP_FRAC_MASK;
 
   if (expA == HPFP_EXP_SPECIAL)
@@ -251,9 +258,6 @@ hpfp addition_function(hpfp a, hpfp b)
   if ((b & HPFP_EXCEPT_SIGN_MASK) == 0)
     return a;
 
-  // get E; if denormalized number, add 1
-  int EA = ((int)expA) + ((int)(expA == 0)) - HPFP_BIAS;
-  int EB = ((int)expB) + ((int)(expB == 0)) - HPFP_BIAS;
   // denormalize numbers: if normalized number, prefix 1
   unsigned int mantinaA = fracA | ((expA != 0) << HPFP_FRAC_WIDTH);
   unsigned int mantinaB = fracB | ((expB != 0) << HPFP_FRAC_WIDTH);
@@ -293,11 +297,11 @@ hpfp addition_function(hpfp a, hpfp b)
   if (resultMantina == 0)                       // -a + a
     return (signA & signB) << HPFP_SIGN_OFFSET; // +-a == b
 
-  // target mask for leading 1
-  const int TARGET = HPFP_FRAC_WIDTH + SHIFT;
+  // target index for leading 1
+  const int TARGET = SHIFT + HPFP_FRAC_WIDTH;
 
   // carry of mantina (subtle overflow)
-  if (resultMantina >= (1 << (TARGET + 1)))
+  if (resultMantina >= (1u << (TARGET + 1)))
   {
     unsigned int lostBit = resultMantina & 0b1;
     resultMantina >>= 1;
@@ -309,8 +313,7 @@ hpfp addition_function(hpfp a, hpfp b)
   // NOTE: __builtin_clz returns the number of leading 0-bits
   if (resultMantina != 0)
   {
-    int leadingZeros = __builtin_clz(resultMantina);
-    int currentPos = 31 - leadingZeros;
+    int currentPos = (8 * sizeof(int) - 1) - __builtin_clz(resultMantina);
     int grow = TARGET - currentPos;
     if (grow > 0)
     {
@@ -350,9 +353,7 @@ hpfp addition_function(hpfp a, hpfp b)
 
   // round to odd
   if (lsb == 0 && sticky)
-  {
     resultMantina |= 0b1; // round up
-  }
 
   return (hpfp)(resultSignMask |
                 (((unsigned int)resultExp) << HPFP_EXP_OFFSET) |
@@ -412,7 +413,7 @@ hpfp multiply_function(hpfp a, hpfp b)
   // get E; if denormalized number, add 1
   int EA = ((int)expA) + ((int)(expA == 0)) - HPFP_BIAS;
   int EB = ((int)expB) + ((int)(expB == 0)) - HPFP_BIAS;
-  // denormalize numbers: if normalized number, prefix 1
+  // normalization: if normalized number, prefix 1
   unsigned int mantinaA = fracA | ((expA != 0) << HPFP_FRAC_WIDTH);
   unsigned int mantinaB = fracB | ((expB != 0) << HPFP_FRAC_WIDTH);
   unsigned int resultMantina = mantinaA * mantinaB; // uses maximum of 22 bits
@@ -421,7 +422,7 @@ hpfp multiply_function(hpfp a, hpfp b)
     return signMask;
 
   char sticky = 0;
-  unsigned int resultExp = EA + EB + HPFP_BIAS - HPFP_FRAC_WIDTH; // HPFP_FRAC_WIDTH: we multiplied mant
+  int resultExp = EA + EB + HPFP_BIAS - HPFP_FRAC_WIDTH;
 
   // normalize target: so that 1 comes at 11th bit
   const int TARGET = HPFP_FRAC_WIDTH;
@@ -464,7 +465,9 @@ hpfp multiply_function(hpfp a, hpfp b)
   if (sticky && (resultMantina & 1) == 0)
     resultMantina |= 1;
 
-  return signMask | (resultExp << HPFP_EXP_OFFSET) | (resultMantina & HPFP_FRAC_MASK);
+  return signMask |
+         (((unsigned int)resultExp) << HPFP_EXP_OFFSET) |
+         (resultMantina & HPFP_FRAC_MASK);
 }
 
 //////// Comparison ////////
@@ -489,13 +492,13 @@ char *comparison_function(hpfp a, hpfp b)
       if (fracB != 0) // b: NaN
         return "<";
 
-      // opposite sign between Inf like: +Inf vs -Inf
-      if (signA != signB)
+      if (signA != signB) // opposite sign between Inf like: +Inf vs -Inf
         return signA ? "<" : ">";
+      else // Inf vs Inf, -Inf vs -Inf
+        return "=";
     }
 
-    // Inf vs Inf, -Inf vs -Inf
-    return "=";
+    return signA ? "<" : ">";
   }
 
   if (expB == HPFP_EXP_SPECIAL)
@@ -512,7 +515,8 @@ char *comparison_function(hpfp a, hpfp b)
   if (signA != signB)
     return signA ? "<" : ">";
 
-  if (expA != expB) {
+  if (expA != expB)
+  {
     if (signA == 1)
       return expA > expB ? "<" : ">";
     return expA > expB ? ">" : "<";
@@ -528,11 +532,12 @@ char *comparison_function(hpfp a, hpfp b)
 
 char *hpfp_to_bits_converter(hpfp result)
 {
-  char *data = (char *)malloc(16 * sizeof(char));
+  char *data = (char *)malloc(17 * sizeof(char));
   for (int i = 0; i < 16; i++)
   {
     data[i] = ((result >> (15 - i)) & 0b1) == 0 ? '0' : '1';
   }
+  data[16] = '\0';
   return data;
 }
 
